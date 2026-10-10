@@ -13,8 +13,8 @@ One task = one fresh Claude session. Tick when done and committed.
 
 ## Phase 3 – MVP
 ### Backend + DB
-- [ ] 3.1 Go project skeleton, config via env vars, MySQL connection
-- [ ] 3.2 Run schema + seed data (3 routes, 10 stops, 4 buses)
+- [x] 3.1 Go project skeleton, config via env vars, MySQL connection
+- [x] 3.2 Run schema + seed data (3 routes, 10 stops, 4 buses)
 - [ ] 3.3 GET /routes and GET /stops
 - [ ] 3.4 GET /buses (reads D2)
 - [ ] 3.5 POST /trip/create (insert into D3, return ranked buses, nearest-bus logic)

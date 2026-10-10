@@ -6,6 +6,12 @@ Roles: student, driver, admin. Wrong role returns 403.
 Error shape: `{ "error": "message" }` with 400 (bad input), 401, 403, 404, 500.
 Update this file whenever you add or change an endpoint.
 
+## Health
+### GET /health
+Outside /api (http://localhost:8080/health) and public: no token needed.
+Res 200: `{ "status": "ok", "db": "ok" }`
+Res 503: `{ "status": "error", "db": "unreachable" }`
+
 ## Auth
 ### POST /auth/login
 Req:  `{ "email": "a@b.com", "password": "..." }`
