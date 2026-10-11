@@ -39,6 +39,7 @@ func main() {
 		api.Get("/stops", handlers.ListStops(db))
 		api.Get("/buses", handlers.ListBuses(db))
 		api.Post("/trip/create", handlers.CreateTrip(db))
+		api.Patch("/trip/{id}/complete", handlers.CompleteTrip(db))
 	})
 
 	srv := &http.Server{

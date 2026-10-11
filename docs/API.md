@@ -41,8 +41,12 @@ Res 201:
 `{ "trip_id": 42, "recommendations": [ { "bus_id": 7, "route_id": 1, "eta_minutes": 6, "board_stop_id": 3, "distance_m": 850, "rank": 1 } ] }`
 
 ### PATCH /trip/{id}/complete  (UPDATE D3)
-Req:  `{ "rating": 4, "feedback": "On time" }`  (rating 1-5, feedback optional)
+Req:  `{ "rating": 4, "feedback": "On time" }`  (rating 1-5, feedback optional, max 500 chars, trimmed; empty -> null)
 Res 200: `{ "trip_id": 42, "status": "completed" }`
+Res 400: invalid id, invalid JSON, missing rating, rating outside 1-5, feedback too long
+Res 404: `trip not found` (also for trips of another student)
+Res 409: `trip already completed`
+Rating can only be set once: a completed trip cannot be re-rated or changed.
 
 ### GET /trips
 History for the logged-in student, newest first.

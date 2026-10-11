@@ -7,7 +7,12 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
+	"unicode/utf8"
+
+	"github.com/go-chi/chi/v5"
 
 	"scmts/backend/ranking"
 )
@@ -129,6 +134,107 @@ func CreateTrip(db *sql.DB) http.HandlerFunc {
 		}
 
 		writeJSON(w, http.StatusCreated, createTripResponse{TripID: tripID, Recommendations: recs})
+	}
+}
+
+type completeTripRequest struct {
+	Rating   *int    `json:"rating"`
+	Feedback *string `json:"feedback"`
+}
+
+type completeTripResponse struct {
+	TripID int64  `json:"trip_id"`
+	Status string `json:"status"`
+}
+
+// CompleteTrip sets the rating, feedback and end time of a started trip (D3).
+// The UPDATE only matches trips that are not completed yet, so a rating
+// is saved at most once even under concurrent requests.
+// PATCH /api/trip/{id}/complete
+func CompleteTrip(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		tripID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+		if err != nil || tripID <= 0 {
+			writeError(w, http.StatusBadRequest, "id must be a positive integer")
+			return
+		}
+
+		r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
+		var req completeTripRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			writeError(w, http.StatusBadRequest, "invalid JSON body")
+			return
+		}
+		if req.Rating == nil {
+			writeError(w, http.StatusBadRequest, "rating is required")
+			return
+		}
+		if *req.Rating < 1 || *req.Rating > 5 {
+			writeError(w, http.StatusBadRequest, "rating must be between 1 and 5")
+			return
+		}
+
+		// Empty or whitespace-only feedback is stored as NULL.
+		var feedback any
+		if req.Feedback != nil {
+			f := strings.TrimSpace(*req.Feedback)
+			if utf8.RuneCountInString(f) > 500 {
+				writeError(w, http.StatusBadRequest, "feedback must be at most 500 characters")
+				return
+			}
+			if f != "" {
+				feedback = f
+			}
+		}
+
+		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+		defer cancel()
+
+		// TODO task 3.7: use the user ID from the auth token
+		studentID := tempStudentID
+
+		res, err := db.ExecContext(ctx, `
+			UPDATE trips
+			SET rating = ?, feedback = ?, ended_at = CURRENT_TIMESTAMP, status = 'completed'
+			WHERE id = ? AND student_id = ? AND status <> 'completed'`,
+			*req.Rating, feedback, tripID, studentID)
+		if err != nil {
+			log.Printf("trips: complete update: %v", err)
+			writeError(w, http.StatusInternalServerError, "internal error")
+			return
+		}
+		n, err := res.RowsAffected()
+		if err != nil {
+			log.Printf("trips: complete rows affected: %v", err)
+			writeError(w, http.StatusInternalServerError, "internal error")
+			return
+		}
+		if n == 1 {
+			writeJSON(w, http.StatusOK, completeTripResponse{TripID: tripID, Status: "completed"})
+			return
+		}
+
+		// Nothing updated: find out whether the trip is missing or already completed.
+		// Trips of other students count as missing.
+		var status string
+		err = db.QueryRowContext(ctx,
+			`SELECT status FROM trips WHERE id = ? AND student_id = ?`,
+			tripID, studentID).Scan(&status)
+		if errors.Is(err, sql.ErrNoRows) {
+			writeError(w, http.StatusNotFound, "trip not found")
+			return
+		}
+		if err != nil {
+			log.Printf("trips: complete lookup: %v", err)
+			writeError(w, http.StatusInternalServerError, "internal error")
+			return
+		}
+		if status == "completed" {
+			writeError(w, http.StatusConflict, "trip already completed")
+			return
+		}
+		log.Printf("trips: complete: trip %d not updated, status %q", tripID, status)
+		writeError(w, http.StatusInternalServerError, "internal error")
 	}
 }
 
