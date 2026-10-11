@@ -33,7 +33,9 @@ Query: `?route_id=1` (optional)
 Res 200:
 `[ { "id": 7, "route_id": 1, "lat": 13.01, "lng": 80.23, "speed": 22, "status": "on_route", "updated_at": "2026-10-11T09:30:05Z" } ]`
 
-### POST /trip/create  (INSERT D3, then rank)
+### POST /trip/create  (rank, then INSERT D3 with the top pick; one transaction)
+Errors: 400 bad JSON / missing fields / lat-lng out of range, 404 destination stop not found.
+`recommendations` is `[]` when no bus qualifies (trip is still stored, bus/route/board stop NULL).
 Req:  `{ "origin": {"lat": 13.01, "lng": 80.23}, "destination": {"stop_id": 5} }`
 Res 201:
 `{ "trip_id": 42, "recommendations": [ { "bus_id": 7, "route_id": 1, "eta_minutes": 6, "board_stop_id": 3, "distance_m": 850, "rank": 1 } ] }`

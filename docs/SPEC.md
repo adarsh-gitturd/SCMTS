@@ -66,9 +66,10 @@ driver "broadcast GPS" connect only through D2.
 ## Trip request flow
 1. Student picks destination; React validates
 2. POST /trip/create (HTTPS)
-3. Go validates, INSERTs trip into D3
+3. Go validates input and checks the destination stop exists (one DB transaction for 3-5)
 4. Go reads D2 (live buses) and D1 (routes)
-5. Advisor logic ranks candidates (nearest bus first in MVP)
+5. Advisor logic ranks candidates (lowest ETA first in MVP), then INSERTs the trip into D3
+   with the top pick (NULL if none)
 6. JSON response; React renders map, advisor card, bus list
 7. WebSocket keeps bus positions fresh in the background
 8. On completion: PATCH /trip/{id}/complete stores rating in D3

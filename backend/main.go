@@ -38,6 +38,7 @@ func main() {
 		api.Get("/routes", handlers.ListRoutes(db))
 		api.Get("/stops", handlers.ListStops(db))
 		api.Get("/buses", handlers.ListBuses(db))
+		api.Post("/trip/create", handlers.CreateTrip(db))
 	})
 
 	srv := &http.Server{

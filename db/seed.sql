@@ -1,4 +1,4 @@
--- SCMTS seed data: 3 routes, 10 stops, 4 buses (+ their D2 rows)
+-- SCMTS seed data: 1 test student, 3 routes, 10 stops, 4 buses (+ their D2 rows)
 -- Run after schema.sql: mysql -u <user> -p scmts < db/seed.sql
 
 -- Safe to re-run: fixed ids, existing seed rows are updated in place.
@@ -7,6 +7,13 @@
 SET NAMES utf8mb4;
 
 START TRANSACTION;
+
+-- ---------- Users: test student (id 1, used as tempStudentID until auth) ----------
+-- password_hash is a placeholder; replace it with a real hash in the auth task (3.7).
+
+INSERT INTO users (id, name, email, password_hash, role) VALUES
+    (1, 'Test Student', 'student@test.local', 'PLACEHOLDER_NOT_A_HASH', 'student')
+ON DUPLICATE KEY UPDATE name = VALUES(name), email = VALUES(email), role = VALUES(role);
 
 -- ---------- D1: stops ----------
 
