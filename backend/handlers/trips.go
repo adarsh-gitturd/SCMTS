@@ -14,11 +14,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"scmts/backend/auth"
 	"scmts/backend/ranking"
 )
-
-// TODO task 3.7: take user ID from the auth token
-const tempStudentID = 1
 
 type createTripRequest struct {
 	Origin *struct {
@@ -41,6 +39,12 @@ type createTripResponse struct {
 // POST /api/trip/create
 func CreateTrip(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		studentID, _, ok := auth.UserFromContext(r.Context())
+		if !ok {
+			writeError(w, http.StatusUnauthorized, "unauthorized")
+			return
+		}
+
 		r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
 		var req createTripRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -114,7 +118,7 @@ func CreateTrip(db *sql.DB) http.HandlerFunc {
 		res, err := tx.ExecContext(ctx, `
 			INSERT INTO trips (student_id, origin_lat, origin_lng, dest_stop_id, bus_id, route_id, board_stop_id)
 			VALUES (?, ?, ?, ?, ?, ?, ?)`,
-			tempStudentID, lat, lng, destID, busID, routeID, boardStopID)
+			studentID, lat, lng, destID, busID, routeID, boardStopID)
 		if err != nil {
 			log.Printf("trips: insert: %v", err)
 			writeError(w, http.StatusInternalServerError, "internal error")
@@ -153,6 +157,12 @@ type completeTripResponse struct {
 // PATCH /api/trip/{id}/complete
 func CompleteTrip(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		studentID, _, ok := auth.UserFromContext(r.Context())
+		if !ok {
+			writeError(w, http.StatusUnauthorized, "unauthorized")
+			return
+		}
+
 		tripID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 		if err != nil || tripID <= 0 {
 			writeError(w, http.StatusBadRequest, "id must be a positive integer")
@@ -189,9 +199,6 @@ func CompleteTrip(db *sql.DB) http.HandlerFunc {
 
 		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 		defer cancel()
-
-		// TODO task 3.7: use the user ID from the auth token
-		studentID := tempStudentID
 
 		res, err := db.ExecContext(ctx, `
 			UPDATE trips

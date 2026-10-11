@@ -1,8 +1,8 @@
 {
   "permissions": {
     "deny": [
-      "Read(./.env)",
-      "Read(./.env.*)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
       "Read(./node_modules/**)",
       "Read(./frontend/dist/**)",
       "Read(./backend/bin/**)",

@@ -13,12 +13,16 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
+	"scmts/backend/auth"
 	"scmts/backend/handlers"
 )
 
 func main() {
 	cfg, err := loadConfig()
 	if err != nil {
+		log.Fatalf("config: %v", err)
+	}
+	if err := auth.SetSecret(cfg.JWTSecret); err != nil {
 		log.Fatalf("config: %v", err)
 	}
 
@@ -33,13 +37,23 @@ func main() {
 	r.Use(middleware.Recoverer)
 	r.Get("/health", healthHandler(db))
 
-	// TODO task 3.7: wrap this group in auth middleware
+	login, err := handlers.Login(db)
+	if err != nil {
+		log.Fatalf("auth: %v", err)
+	}
+	r.Post("/auth/login", login)
+
 	r.Route("/api", func(api chi.Router) {
+		api.Use(auth.Middleware)
+
+		// Any logged-in user.
 		api.Get("/routes", handlers.ListRoutes(db))
 		api.Get("/stops", handlers.ListStops(db))
 		api.Get("/buses", handlers.ListBuses(db))
-		api.Post("/trip/create", handlers.CreateTrip(db))
-		api.Patch("/trip/{id}/complete", handlers.CompleteTrip(db))
+
+		student := api.With(auth.RequireRole("student"))
+		student.Post("/trip/create", handlers.CreateTrip(db))
+		student.Patch("/trip/{id}/complete", handlers.CompleteTrip(db))
 	})
 
 	srv := &http.Server{

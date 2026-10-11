@@ -8,7 +8,7 @@ SET NAMES utf8mb4;
 
 START TRANSACTION;
 
--- ---------- Users: test student (id 1, used as tempStudentID until auth) ----------
+-- ---------- Users: test student (id 1) ----------
 -- password_hash is a placeholder; replace it with a real hash in the auth task (3.7).
 
 INSERT INTO users (id, name, email, password_hash, role) VALUES

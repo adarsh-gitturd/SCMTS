@@ -19,12 +19,13 @@ One task = one fresh Claude session. Tick when done and committed.
 - [x] 3.4 GET /buses (reads D2)
 - [x] 3.5 POST /trip/create (insert into D3, return ranked buses, nearest-bus logic)
 - [x] 3.6 PATCH /trip/{id}/complete (rating + end time)
-- [ ] 3.7 Basic auth with roles (student/driver/admin)
-  - wrap /api routes in auth middleware (/health stays public)
-  - Set MySQL session time zone to UTC in db.go (then simplify buses.go timestamp handling)
+- [x] 3.7 Basic auth with roles (student/driver/admin)
+  - [x] login + tokens: auth package, POST /auth/login, JWT_SECRET check, cmd/seeduser
+  - [x] wrap /api routes in auth middleware (/health stays public), RequireRole, user id from token
+  - [x] Set MySQL session time zone to UTC in db.go (then simplify buses.go timestamp handling)
 ### GPS + real time
 - [ ] 3.8 GPS simulator script: moves buses along a route, updates D2 every 3s
-- [ ] 3.9 WebSocket endpoint broadcasting bus positions
+- [ ] 3.9 WebSocket endpoint broadcasting bus positions (/ws/buses: student, admin; /ws/driver: driver)
 ### Student UI
 - [ ] 3.10 React skeleton + routing + API helper
 - [ ] 3.11 Live map with bus markers (Leaflet + OpenStreetMap)
@@ -33,16 +34,16 @@ One task = one fresh Claude session. Tick when done and committed.
 - [ ] 3.14 Alerts strip
 - [ ] 3.15 Trip history + rating form
 ### Driver UI
-- [ ] 3.16 Show assigned route
-- [ ] 3.17 Send GPS + status updates
-- [ ] 3.18 Log passenger count
+- [ ] 3.16 Show assigned route (GET /driver/route: role driver)
+- [ ] 3.17 Send GPS + status updates (driver endpoints: role driver)
+- [ ] 3.18 Log passenger count (POST /driver/passengers: role driver)
 ### Admin UI
-- [ ] 3.19 CRUD routes and stops (writes D1)
-- [ ] 3.20 Fleet overview (reads D2)
+- [ ] 3.19 CRUD routes and stops (writes D1; /admin/*: role admin)
+- [ ] 3.20 Fleet overview (reads D2; GET /admin/fleet: role admin)
 
 ## Phase 4 – Pre-AI data
 - [ ] 4.1 Add context columns to trips (time, weekday, delay, passengers)
-- [ ] 4.2 Admin analytics queries (busiest routes, average delay)
+- [ ] 4.2 Admin analytics queries (busiest routes, average delay; /admin/analytics/*: role admin)
 - [ ] 4.3 Analytics page in admin UI
 - [ ] 4.4 Script to generate extra synthetic trip data
 

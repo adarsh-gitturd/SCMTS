@@ -25,7 +25,7 @@ type bus struct {
 func ListBuses(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		query := `
-			SELECT b.id, b.route_id, l.lat, l.lng, l.speed, l.status, UNIX_TIMESTAMP(l.updated_at)
+			SELECT b.id, b.route_id, l.lat, l.lng, l.speed, l.status, l.updated_at
 			FROM buses b
 			JOIN bus_live l ON l.bus_id = b.id`
 		var args []any
@@ -57,9 +57,9 @@ func ListBuses(db *sql.DB) http.HandlerFunc {
 			var (
 				b       bus
 				routeID sql.NullInt64
-				updated int64
 			)
-			if err := rows.Scan(&b.ID, &routeID, &b.Lat, &b.Lng, &b.Speed, &b.Status, &updated); err != nil {
+			// Session time zone is UTC (db.go), so updated_at scans as UTC.
+			if err := rows.Scan(&b.ID, &routeID, &b.Lat, &b.Lng, &b.Speed, &b.Status, &b.UpdatedAt); err != nil {
 				log.Printf("buses: scan: %v", err)
 				writeError(w, http.StatusInternalServerError, "internal error")
 				return
@@ -68,7 +68,6 @@ func ListBuses(db *sql.DB) http.HandlerFunc {
 				id := int(routeID.Int64)
 				b.RouteID = &id
 			}
-			b.UpdatedAt = time.Unix(updated, 0).UTC()
 			buses = append(buses, b)
 		}
 		if err := rows.Err(); err != nil {

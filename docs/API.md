@@ -6,21 +6,38 @@ Roles: student, driver, admin. Wrong role returns 403.
 Error shape: `{ "error": "message" }` with 400 (bad input), 401, 403, 404, 500.
 Update this file whenever you add or change an endpoint.
 
+Auth errors (every /api endpoint):
+- 401 `{ "error": "unauthorized" }`: Authorization header missing or not `Bearer <token>`,
+  or the token is malformed, expired, or has a bad signature/algorithm.
+- 403 `{ "error": "forbidden" }`: valid token, but the role may not call this endpoint.
+Role and user id come from the token, so role changes apply at the next login (max 24h).
+Each endpoint below lists who may call it in **Roles:**.
+
 ## Health
 ### GET /health
 Outside /api (http://localhost:8080/health) and public: no token needed.
+**Roles:** public.
 Res 200: `{ "status": "ok", "db": "ok" }`
 Res 503: `{ "status": "error", "db": "unreachable" }`
 
 ## Auth
 ### POST /auth/login
-Req:  `{ "email": "a@b.com", "password": "..." }`
+Outside /api (http://localhost:8080/auth/login) and public: no token needed.
+**Roles:** public.
+Req:  `{ "email": "a@b.com", "password": "..." }`  (email is trimmed; body max 1 MB)
 Res 200: `{ "token": "...", "user": { "id": 1, "name": "Asha", "role": "student" } }`
+Res 400: invalid JSON, or email/password missing or empty
+Res 401: `invalid credentials` (same response for unknown email and wrong password)
+Res 500: `internal error`
+Token: JWT, HS256, expires 24h after login. Claims: `uid`, `role`, `exp`.
 
-### GET /me
+### GET /me  (not built yet)
+**Roles:** any logged-in user.
 Res 200: `{ "id": 1, "name": "Asha", "role": "student" }`
 
 ## Shared reads (D1)
+**Roles:** any logged-in user (student, driver, admin).
+
 ### GET /routes
 Res 200: `[ { "id": 1, "name": "Main Gate - Hostel", "stops": [ {"stop_id": 3, "order": 1} ] } ]`
 
@@ -28,22 +45,30 @@ Res 200: `[ { "id": 1, "name": "Main Gate - Hostel", "stops": [ {"stop_id": 3, "
 Res 200: `[ { "id": 3, "name": "Library", "lat": 13.0102, "lng": 80.2355 } ]`
 
 ## Student
+**Roles:** student, except GET /buses (any logged-in user).
+Trips are always created for and owned by the logged-in student (user id from the token).
+
 ### GET /buses  (reads D2)
+**Roles:** any logged-in user.
 Query: `?route_id=1` (optional)
 Res 200:
 `[ { "id": 7, "route_id": 1, "lat": 13.01, "lng": 80.23, "speed": 22, "status": "on_route", "updated_at": "2026-10-11T09:30:05Z" } ]`
 
 ### POST /trip/create  (rank, then INSERT D3 with the top pick; one transaction)
-Errors: 400 bad JSON / missing fields / lat-lng out of range, 404 destination stop not found.
+**Roles:** student.
+Errors: 400 bad JSON / missing fields / lat-lng out of range, 401 no/invalid token,
+403 not a student, 404 destination stop not found.
 `recommendations` is `[]` when no bus qualifies (trip is still stored, bus/route/board stop NULL).
 Req:  `{ "origin": {"lat": 13.01, "lng": 80.23}, "destination": {"stop_id": 5} }`
 Res 201:
 `{ "trip_id": 42, "recommendations": [ { "bus_id": 7, "route_id": 1, "eta_minutes": 6, "board_stop_id": 3, "distance_m": 850, "rank": 1 } ] }`
 
 ### PATCH /trip/{id}/complete  (UPDATE D3)
+**Roles:** student (own trips only).
 Req:  `{ "rating": 4, "feedback": "On time" }`  (rating 1-5, feedback optional, max 500 chars, trimmed; empty -> null)
 Res 200: `{ "trip_id": 42, "status": "completed" }`
 Res 400: invalid id, invalid JSON, missing rating, rating outside 1-5, feedback too long
+Res 401: no/invalid token. Res 403: not a student.
 Res 404: `trip not found` (also for trips of another student)
 Res 409: `trip already completed`
 Rating can only be set once: a completed trip cannot be re-rated or changed.
@@ -59,6 +84,8 @@ Saved places. POST req: `{ "name": "Hostel", "stop_id": 8 }`
 Res 200: `[ { "id": 1, "type": "delay", "bus_id": 7, "message": "Bus 7 running 5 min late", "created_at": "..." } ]`
 
 ## Driver
+**Roles:** driver (all endpoints in this section).
+
 ### GET /driver/route
 Assigned route and stops for the logged-in driver's bus.
 Res 200: `{ "bus_id": 7, "route": { "id": 1, "name": "...", "stops": [ ... ] } }`
@@ -76,6 +103,8 @@ Req:  `{ "count": 18, "stop_id": 3 }`
 Res 201: `{ "id": 311 }`
 
 ## Admin
+**Roles:** admin (all endpoints in this section).
+
 ### Routes, stops, buses (write D1)
 - POST /admin/routes, PUT /admin/routes/{id}, DELETE /admin/routes/{id}
 - POST /admin/stops, PUT /admin/stops/{id}, DELETE /admin/stops/{id}
@@ -95,10 +124,12 @@ Res 200: `[ { "hour": 8, "weekday": 1, "trips": 54 } ]`
 
 ## WebSocket
 ### WS /ws/buses  (students, admin)
+**Roles:** student, admin.
 Server pushes on every D2 change:
 `{ "type": "position", "bus_id": 7, "lat": 13.01, "lng": 80.23, "speed": 22, "status": "on_route", "ts": "..." }`
 
 ### WS /ws/driver  (driver)
+**Roles:** driver.
 Client sends location every ~3s: `{ "lat": 13.01, "lng": 80.23, "speed": 22, "ts": "..." }`
 Server acks with `{ "ok": true }`. Client buffers and retries if the connection drops.
 

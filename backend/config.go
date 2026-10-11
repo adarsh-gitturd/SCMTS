@@ -13,6 +13,7 @@ type Config struct {
 	DBPassword string
 	DBName     string
 	Port       string
+	JWTSecret  string
 }
 
 func loadConfig() (Config, error) {
@@ -23,9 +24,13 @@ func loadConfig() (Config, error) {
 		DBPassword: os.Getenv("DB_PASSWORD"),
 		DBName:     getEnv("DB_NAME", "scmts"),
 		Port:       getEnv("PORT", "8080"),
+		JWTSecret:  os.Getenv("JWT_SECRET"),
 	}
 	if cfg.DBUser == "" {
 		return Config{}, errors.New("DB_USER is required")
+	}
+	if cfg.JWTSecret == "" {
+		return Config{}, errors.New("JWT_SECRET is required")
 	}
 	return cfg, nil
 }

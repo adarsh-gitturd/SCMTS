@@ -20,6 +20,10 @@ func openDB(cfg Config) (*sql.DB, error) {
 	mc.DBName = cfg.DBName
 	mc.ParseTime = true
 	mc.Loc = time.UTC
+	// The driver runs SET time_zone on every new connection, so the whole pool
+	// reads and writes TIMESTAMP columns in UTC. '+00:00' instead of 'UTC'
+	// because named zones need MySQL's time zone tables loaded.
+	mc.Params = map[string]string{"time_zone": "'+00:00'"}
 
 	db, err := sql.Open("mysql", mc.FormatDSN())
 	if err != nil {
