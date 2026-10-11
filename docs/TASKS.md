@@ -16,11 +16,12 @@ One task = one fresh Claude session. Tick when done and committed.
 - [x] 3.1 Go project skeleton, config via env vars, MySQL connection
 - [x] 3.2 Run schema + seed data (3 routes, 10 stops, 4 buses)
 - [x] 3.3 GET /routes and GET /stops
-- [ ] 3.4 GET /buses (reads D2)
+- [x] 3.4 GET /buses (reads D2)
 - [ ] 3.5 POST /trip/create (insert into D3, return ranked buses, nearest-bus logic)
 - [ ] 3.6 PATCH /trip/{id}/complete (rating + end time)
 - [ ] 3.7 Basic auth with roles (student/driver/admin)
   - wrap /api routes in auth middleware (/health stays public)
+  - Set MySQL session time zone to UTC in db.go (then simplify buses.go timestamp handling)
 ### GPS + real time
 - [ ] 3.8 GPS simulator script: moves buses along a route, updates D2 every 3s
 - [ ] 3.9 WebSocket endpoint broadcasting bus positions

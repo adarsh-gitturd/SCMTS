@@ -37,6 +37,7 @@ func main() {
 	r.Route("/api", func(api chi.Router) {
 		api.Get("/routes", handlers.ListRoutes(db))
 		api.Get("/stops", handlers.ListStops(db))
+		api.Get("/buses", handlers.ListBuses(db))
 	})
 
 	srv := &http.Server{
