@@ -12,6 +12,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+
+	"scmts/backend/handlers"
 )
 
 func main() {
@@ -30,6 +32,12 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Get("/health", healthHandler(db))
+
+	// TODO task 3.7: wrap this group in auth middleware
+	r.Route("/api", func(api chi.Router) {
+		api.Get("/routes", handlers.ListRoutes(db))
+		api.Get("/stops", handlers.ListStops(db))
+	})
 
 	srv := &http.Server{
 		Addr:              ":" + cfg.Port,
