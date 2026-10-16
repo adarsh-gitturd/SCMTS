@@ -15,6 +15,8 @@ import (
 
 	"scmts/backend/auth"
 	"scmts/backend/handlers"
+	"scmts/backend/hub"
+	"scmts/backend/wsticket"
 )
 
 func main() {
@@ -25,6 +27,10 @@ func main() {
 	if err := auth.SetSecret(cfg.JWTSecret); err != nil {
 		log.Fatalf("config: %v", err)
 	}
+	origins, err := handlers.ParseOrigins(os.Getenv("ALLOWED_ORIGINS"))
+	if err != nil {
+		log.Fatalf("config: %v", err)
+	}
 
 	db, err := openDB(cfg)
 	if err != nil {
@@ -32,28 +38,48 @@ func main() {
 	}
 	defer db.Close()
 
-	r := chi.NewRouter()
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Get("/health", healthHandler(db))
+	// WebSocket tickets; the cleanup goroutine stops when ticketCtx is cancelled.
+	tickets := wsticket.New()
+	ticketCtx, stopTickets := context.WithCancel(context.Background())
+	defer stopTickets()
+	go tickets.Run(ticketCtx, time.Minute)
+
+	// Live bus feed; the hub goroutine stops when hubCtx is cancelled.
+	busHub := hub.New(hub.LoadBuses(db), time.Second, 200)
+	hubCtx, stopHub := context.WithCancel(context.Background())
+	defer stopHub()
+	go busHub.Run(hubCtx)
 
 	login, err := handlers.Login(db)
 	if err != nil {
 		log.Fatalf("auth: %v", err)
 	}
-	r.Post("/auth/login", login)
 
-	r.Route("/api", func(api chi.Router) {
-		api.Use(auth.Middleware)
+	r := chi.NewRouter()
 
-		// Any logged-in user.
-		api.Get("/routes", handlers.ListRoutes(db))
-		api.Get("/stops", handlers.ListStops(db))
-		api.Get("/buses", handlers.ListBuses(db))
+	// No request logger here: the URL carries a one-time ticket.
+	r.With(middleware.Recoverer).Get("/ws/buses", handlers.BusFeed(tickets, busHub, origins))
 
-		student := api.With(auth.RequireRole("student"))
-		student.Post("/trip/create", handlers.CreateTrip(db))
-		student.Patch("/trip/{id}/complete", handlers.CompleteTrip(db))
+	r.Group(func(r chi.Router) {
+		r.Use(middleware.Logger)
+		r.Use(middleware.Recoverer)
+		r.Get("/health", healthHandler(db))
+		r.Post("/auth/login", login)
+
+		r.Route("/api", func(api chi.Router) {
+			api.Use(auth.Middleware)
+
+			// Any logged-in user.
+			api.Get("/routes", handlers.ListRoutes(db))
+			api.Get("/stops", handlers.ListStops(db))
+			api.Get("/buses", handlers.ListBuses(db))
+
+			student := api.With(auth.RequireRole("student"))
+			student.Post("/trip/create", handlers.CreateTrip(db))
+			student.Patch("/trip/{id}/complete", handlers.CompleteTrip(db))
+
+			api.With(auth.RequireRole("student", "admin")).Post("/ws-ticket", handlers.IssueWSTicket(tickets))
+		})
 	})
 
 	srv := &http.Server{
@@ -82,4 +108,11 @@ func main() {
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Printf("shutdown: %v", err)
 	}
+	// Shutdown ignores hijacked (WebSocket) connections: stop the hub, which
+	// closes every client, then wait for the handlers to finish.
+	stopHub()
+	if err := busHub.Wait(ctx); err != nil {
+		log.Printf("shutdown: websockets: %v", err)
+	}
+	stopTickets()
 }

@@ -24,8 +24,13 @@ One task = one fresh Claude session. Tick when done and committed.
   - [x] wrap /api routes in auth middleware (/health stays public), RequireRole, user id from token
   - [x] Set MySQL session time zone to UTC in db.go (then simplify buses.go timestamp handling)
 ### GPS + real time
-- [ ] 3.8 GPS simulator script: moves buses along a route, updates D2 every 3s
+- [x] 3.8 GPS simulator script: moves buses along a route, updates D2 every 3s
 - [ ] 3.9 WebSocket endpoint broadcasting bus positions (/ws/buses: student, admin; /ws/driver: driver)
+  - [x] 3.9-A ticket system: wsticket package, POST /api/ws-ticket (student, admin)
+  - [x] 3.9-B GET /ws/buses live feed: hub package (one shared poller), ticket + Origin check,
+        route mounted outside the request logger so the ticket is never logged
+  - [x] 3.9-C WS /ws/driver (driver GPS over WebSocket)
+  - [x] 3.9-D ranking skips buses on break (out_of_service and break excluded, delayed eligible)
 ### Student UI
 - [ ] 3.10 React skeleton + routing + API helper
 - [ ] 3.11 Live map with bus markers (Leaflet + OpenStreetMap)

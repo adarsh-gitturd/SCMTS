@@ -123,10 +123,46 @@ Query: `?from=2026-10-01&to=2026-10-11`
 Res 200: `[ { "hour": 8, "weekday": 1, "trips": 54 } ]`
 
 ## WebSocket
-### WS /ws/buses  (students, admin)
+Browsers can't send an Authorization header when opening a WebSocket, so the client first
+gets a one-time ticket from POST /ws-ticket, then opens the socket with it in the URL:
+`wss://<host>/ws/buses?ticket=<ticket>`.
+
+### POST /ws-ticket
 **Roles:** student, admin.
-Server pushes on every D2 change:
-`{ "type": "position", "bus_id": 7, "lat": 13.01, "lng": 80.23, "speed": 22, "status": "on_route", "ts": "..." }`
+No request body. User id and role come from the token.
+Res 200: `{ "ticket": "kX9...", "expires_in": 30 }`  (header `Cache-Control: no-store`)
+Res 401: no/invalid token. Res 403: not a student or admin.
+Res 503: `too many requests, try again` (server-wide limit of 10,000 live tickets)
+Res 500: `internal error`
+Ticket: 32 random bytes, base64url without padding (43 chars). Valid for 30 seconds and
+single use: it is consumed when GET /ws/buses checks it, even if the connection then fails
+(including 503). Get a new ticket for every connection or reconnect. Tickets are in memory
+and do not survive a restart.
+
+### WS /ws/buses?ticket=<ticket>  (students, admin)
+Outside /api (ws://localhost:8080/ws/buses) and not request-logged, because the URL carries the ticket.
+**Roles:** student, admin (taken from the ticket; no Authorization header).
+Checked before the upgrade, in this order (errors are plain HTTP with the usual error shape):
+- 403 `forbidden`: `Origin` header missing or not listed in the server's `ALLOWED_ORIGINS`
+  (exact `scheme://host[:port]` match). The ticket is not consumed.
+- 401 `unauthorized`: ticket missing, unknown, expired or already used.
+- 403 `forbidden`: ticket belongs to a role other than student/admin.
+- 503 `too many connections, try again`: 200 live connections already (ticket is consumed).
+
+After connecting, the server sends one JSON text frame per bus:
+`{ "type": "position", "bus_id": 7, "lat": 13.01, "lng": 80.23, "speed": 22, "status": "on_route", "ts": "2026-10-16T08:30:00Z" }`
+(`ts` = bus_live.updated_at, RFC 3339 UTC.)
+- First a full snapshot: one frame for every bus in bus_live.
+- Then, polled every second, a frame only for buses that changed (any field, including `ts`).
+  No update is lost or repeated between the snapshot and the first change.
+- A bus removed from bus_live sends nothing; if it comes back it is sent again as new.
+The socket is receive-only: any message from the client closes it with 1008 (policy violation).
+Server pings every 30s and drops clients that don't answer within 10s.
+Close codes: 1008 `too slow` (client fell ~16s behind) or `read-only`; 1001 `server shutting down`.
+On close, get a new ticket and reconnect; the new snapshot replaces local state.
+
+Server config: `ALLOWED_ORIGINS` env var, comma-separated, e.g.
+`http://localhost:5173,https://scmts.example.com`. The server refuses to start without it.
 
 ### WS /ws/driver  (driver)
 **Roles:** driver.

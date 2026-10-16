@@ -63,6 +63,35 @@ func TestRank(t *testing.T) {
 			},
 		},
 		{
+			name:   "break bus skipped",
+			destID: 4,
+			buses: []Bus{
+				{ID: 1, RouteID: 1, Pos: Point{13.005, 80.000}, SpeedKmh: 30, Status: "break"},
+				{ID: 2, RouteID: 1, Pos: Point{13.000, 80.000}, SpeedKmh: 30, Status: "on_route"},
+			},
+			want: []Recommendation{
+				{BusID: 2, RouteID: 1, BoardStopID: 2, DistanceM: 1112, EtaMinutes: 3, Rank: 1},
+			},
+		},
+		{
+			name:   "delayed bus still recommended",
+			destID: 4,
+			buses: []Bus{
+				{ID: 1, RouteID: 1, Pos: Point{13.005, 80.000}, SpeedKmh: 30, Status: "delayed"},
+			},
+			want: []Recommendation{
+				{BusID: 1, RouteID: 1, BoardStopID: 2, DistanceM: 556, EtaMinutes: 2, Rank: 1},
+			},
+		},
+		{
+			name:   "only bus on route is on break",
+			destID: 4,
+			buses: []Bus{
+				{ID: 1, RouteID: 1, Pos: Point{13.005, 80.000}, SpeedKmh: 30, Status: "break"},
+			},
+			want: []Recommendation{},
+		},
+		{
 			name:   "bus on route without destination skipped",
 			destID: 4,
 			buses: []Bus{
@@ -106,6 +135,28 @@ func TestRank(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Rank =\n  %+v\nwant\n  %+v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIsRecommendable(t *testing.T) {
+	tests := []struct {
+		status string
+		want   bool
+	}{
+		{"on_route", true},
+		{"delayed", true},
+		{"break", false},
+		{"out_of_service", false},
+		// Unknown and empty values stay eligible (behaviour before break was added).
+		{"", true},
+		{"parked", true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.status, func(t *testing.T) {
+			if got := isRecommendable(tt.status); got != tt.want {
+				t.Errorf("isRecommendable(%q) = %v, want %v", tt.status, got, tt.want)
 			}
 		})
 	}

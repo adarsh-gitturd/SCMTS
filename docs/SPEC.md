@@ -77,7 +77,7 @@ driver "broadcast GPS" connect only through D2.
 ## Recommendation logic (MVP, rule-based)
 1. Candidates: buses whose route passes near the student's origin and the destination
 2. ETA: straight-line distance / average speed (Phase 5 replaces with learned ETA)
-3. Rank: lowest ETA first; skip buses with status out_of_service
+3. Rank: lowest ETA first; skip buses with status out_of_service or break (delayed stays eligible)
 4. Return top 3
 
 ## Tech stack

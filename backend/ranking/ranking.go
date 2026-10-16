@@ -13,6 +13,7 @@ const (
 	defaultSpeedKmh = 20.0
 	maxResults      = 3
 	statusOutOfServ = "out_of_service"
+	statusBreak     = "break"
 )
 
 // Point is a lat/lng coordinate in degrees.
@@ -74,7 +75,7 @@ func Rank(origin Point, destinationStopID int64, buses []Bus, routes []Route) []
 
 	recs := make([]Recommendation, 0)
 	for _, b := range buses {
-		if b.Status == statusOutOfServ || b.RouteID == 0 {
+		if !isRecommendable(b.Status) || b.RouteID == 0 {
 			continue
 		}
 		route, ok := routeByID[b.RouteID]
@@ -119,6 +120,13 @@ func Rank(origin Point, destinationStopID int64, buses []Bus, routes []Route) []
 		recs[i].Rank = i + 1
 	}
 	return recs
+}
+
+// isRecommendable reports whether a bus with this status may be recommended.
+// Only out_of_service and break are excluded (break: parked, no passengers).
+// delayed and any other value, including unknown or empty, stay eligible.
+func isRecommendable(status string) bool {
+	return status != statusOutOfServ && status != statusBreak
 }
 
 // stopIndex returns the position of stopID in stops, or -1.
