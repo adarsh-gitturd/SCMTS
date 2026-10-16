@@ -32,7 +32,7 @@ One task = one fresh Claude session. Tick when done and committed.
   - [x] 3.9-C WS /ws/driver (driver GPS over WebSocket)
   - [x] 3.9-D ranking skips buses on break (out_of_service and break excluded, delayed eligible)
 ### Student UI
-- [ ] 3.10 React skeleton + routing + API helper
+- [x] 3.10 React skeleton + routing + API helper (Vite + react-router-dom, login, sessionStorage auth)
 - [ ] 3.11 Live map with bus markers (Leaflet + OpenStreetMap)
 - [ ] 3.12 Destination picker + call POST /trip/create
 - [ ] 3.13 Advisor card + nearby buses list
