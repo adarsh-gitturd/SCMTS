@@ -146,7 +146,7 @@ Res 500: `internal error`
 **Roles:** admin (all endpoints in this section).
 
 ### Routes, stops, buses (write D1)
-- POST /admin/routes, PUT /admin/routes/{id}, DELETE /admin/routes/{id}  (not built yet)
+- POST /admin/routes, PUT /admin/routes/{id}, DELETE /admin/routes/{id}
 - POST /admin/buses, PUT /admin/buses/{id}, DELETE /admin/buses/{id}  (not built yet)
 Example POST /admin/buses: `{ "plate": "TN01AB1234", "route_id": 1, "driver_id": 9 }`
 
@@ -173,6 +173,33 @@ Res 409: `stop is in use`: the stop is on a route (route_stops), is the destinat
 trip, or has passenger logs. Nothing is changed.
 A successful delete also deletes students' saved_places for that stop and sets
 trips.board_stop_id to NULL on past trips that boarded there.
+
+Route body (POST and PUT): `{ "name": "Main Gate - Hostel", "stops": [3, 5, 1] }`
+- Both fields required (PUT is a full replace of name and stops). Unknown fields ignored. Body max 8 KB.
+- name: trimmed, 1-100 characters, no control characters. Unique: 409 `route name already exists`.
+- stops: ordered stop ids; stop_order is the 1-based position. `[]` is allowed; missing or
+  `null` is 400. At most 50, each a positive integer, no id twice (400 `duplicate stop id 5`).
+- A stop id that does not exist: 400 `unknown stop id`; nothing is changed.
+`{id}` must be a positive integer, otherwise 400 `id must be a positive integer`.
+Errors: 400 bad JSON / missing field / invalid value, 401, 403 not an admin, 500 `internal error`.
+
+### POST /admin/routes
+Res 201: `{ "id": 4 }`
+Res 409: `route name already exists`
+
+### PUT /admin/routes/{id}
+Res 200: the route as stored, same shape as GET /routes, stops in order (always an array):
+`{ "id": 4, "name": "Main Gate - Hostel", "stops": [ {"stop_id": 3, "order": 1} ] }`
+Sending the same values again is still 200. On any error the route is unchanged.
+Res 404: `route not found`
+Res 409: `route name already exists`
+
+### DELETE /admin/routes/{id}
+Res 204: no body.
+Res 404: `route not found`
+Res 409: `route has buses assigned`: some bus has this route_id. Nothing is changed.
+A successful delete also deletes the route's stop list (route_stops) and sets
+trips.route_id to NULL on past trips of that route.
 
 ### GET /admin/fleet  (reads D2)
 All buses with live status, driver and last update time.

@@ -54,6 +54,7 @@ One task = one fresh Claude session. Tick when done and committed.
 ### Admin UI
 - [ ] 3.19 CRUD routes and stops (writes D1; /admin/*: role admin)
   - [x] 3.19-A admin stops CRUD
+  - [x] 3.19-B admin routes CRUD
 - [ ] 3.20 Fleet overview (reads D2; GET /admin/fleet: role admin)
 
 ## Phase 4 – Pre-AI data
