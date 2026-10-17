@@ -129,7 +129,18 @@ Res 401: no/invalid token. Res 403: not a driver. Res 500: `internal error`
 
 ### POST /driver/passengers  (INSERT D3)
 Req:  `{ "count": 18, "stop_id": 3 }`
+Both fields required (missing or `null` is 400, not 0). count: integer 0..200 (18.5, 18.0
+or "18" is 400). stop_id: positive integer. Body max 1 KB. Unknown fields are ignored.
+Writes one row for the driver's own bus (driver id from the token; no bus id, driver id
+or timestamp is accepted); the server sets `logged_at`. The stop must be on the bus's route.
 Res 201: `{ "id": 311 }`
+Res 400: invalid JSON / validation message, or `stop is not on your route`.
+Res 404: `no bus assigned`, or `stop not found`.
+Res 409: `no route assigned` (the bus has no route).
+If several apply, checked in this order: no bus, no route, stop not found, not on route.
+Res 429: `too many updates` (less than 1 s since this driver's last accepted log;
+in memory, per server process). Res 401: no/invalid token. Res 403: not a driver.
+Res 500: `internal error`
 
 ## Admin
 **Roles:** admin (all endpoints in this section).

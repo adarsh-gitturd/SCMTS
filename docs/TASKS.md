@@ -49,6 +49,7 @@ One task = one fresh Claude session. Tick when done and committed.
   - [x] 3.17-A driver location + status endpoints
   - [x] 3.17-B driver controls UI
 - [ ] 3.18 Log passenger count (POST /driver/passengers: role driver)
+  - [x] 3.18-A POST /driver/passengers
 ### Admin UI
 - [ ] 3.19 CRUD routes and stops (writes D1; /admin/*: role admin)
 - [ ] 3.20 Fleet overview (reads D2; GET /admin/fleet: role admin)

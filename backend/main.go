@@ -83,6 +83,7 @@ func main() {
 			driver.Get("/driver/route", handlers.DriverRoute(db))
 			driver.Post("/driver/location", handlers.DriverLocation(db))
 			driver.Patch("/driver/status", handlers.DriverStatus(db))
+			driver.Post("/driver/passengers", handlers.DriverPassengers(db))
 
 			api.With(auth.RequireRole("student", "admin")).Post("/ws-ticket", handlers.IssueWSTicket(tickets))
 		})
