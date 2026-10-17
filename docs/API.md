@@ -1,7 +1,8 @@
 # SCMTS API
 
 Base URL (dev): http://localhost:8080/api
-Format: JSON. Auth: `Authorization: Bearer <token>` on everything except /auth/login.
+Format: JSON. Auth: `Authorization: Bearer <token>` on every /api endpoint; /health and
+/auth/login are public, /ws/buses uses a ticket (see WebSocket).
 Roles: student, driver, admin. Wrong role returns 403.
 Error shape: `{ "error": "message" }` with 400 (bad input), 401, 403, 404, 500.
 Update this file whenever you add or change an endpoint.
@@ -85,10 +86,10 @@ Timestamps are RFC3339 UTC.
 Res 400: `limit must be an integer between 1 and 100`
 Res 401: no/invalid token. Res 403: not a student. Res 500: `internal error`
 
-### GET /places, POST /places
+### GET /places, POST /places  (not built yet)
 Saved places. POST req: `{ "name": "Hostel", "stop_id": 8 }`
 
-### GET /alerts
+### GET /alerts  (not built yet)
 Not built yet; the MVP derives alerts in the frontend from live bus status.
 Res 200: `[ { "id": 1, "type": "delay", "bus_id": 7, "message": "Bus 7 running 5 min late", "created_at": "..." } ]`
 
@@ -146,9 +147,8 @@ Res 500: `internal error`
 **Roles:** admin (all endpoints in this section).
 
 ### Routes, stops, buses (write D1)
+- POST /admin/stops, PUT /admin/stops/{id}, DELETE /admin/stops/{id}
 - POST /admin/routes, PUT /admin/routes/{id}, DELETE /admin/routes/{id}
-- POST /admin/buses, PUT /admin/buses/{id}, DELETE /admin/buses/{id}  (not built yet)
-Example POST /admin/buses: `{ "plate": "TN01AB1234", "route_id": 1, "driver_id": 9 }`
 
 Stop body (POST and PUT): `{ "name": "Library", "lat": 13.0102, "lng": 80.2355 }`
 - All three fields required (PUT is a full replace). Unknown fields ignored. Body max 4 KB.
@@ -201,6 +201,10 @@ Res 409: `route has buses assigned`: some bus has this route_id. Nothing is chan
 A successful delete also deletes the route's stop list (route_stops) and sets
 trips.route_id to NULL on past trips of that route.
 
+### Buses (not built yet)
+- POST /admin/buses, PUT /admin/buses/{id}, DELETE /admin/buses/{id}
+Example POST /admin/buses: `{ "plate": "TN01AB1234", "route_id": 1, "driver_id": 9 }`
+
 ### GET /admin/fleet  (reads D2)
 **Roles:** admin. Read-only.
 All buses with live data, route and driver name, ordered by bus id, at most 500 (hard cap,
@@ -215,12 +219,51 @@ Res 200:
 - Only the driver's name is returned from users (no email, role, etc.).
 Res 401: no/invalid token. Res 403: not an admin. Res 500: `internal error`
 
-### GET /admin/analytics/routes  (reads D3)
-Res 200: `[ { "route_id": 1, "trips": 320, "avg_rating": 4.2, "avg_delay_min": 3.1 } ]`
+### Analytics query parameters (both endpoints below)
+`?from=YYYY-MM-DD&to=YYYY-MM-DD`, both optional, inclusive, dates in the campus time zone
+(CAMPUS_TZ, default Asia/Kolkata). An empty value counts as missing.
+- Default `to`: today's campus date (server clock). Default `from`: 29 days before `to`
+  (30 days). Only `from` given: `to` is today.
+- A trip is in range when `started_at` >= start of `from` and < start of the day after `to`
+  (campus midnights, converted to UTC; DST days are 23/25 hours).
+- The response echoes the dates actually used as `from` and `to`.
+- Res 400: `from must be a date YYYY-MM-DD`, `to must be a date YYYY-MM-DD`,
+  `to must not be before from`, `range must be at most 366 days`
+- Aggregates only: no student ids, names, origins, feedback or individual trips.
 
-### GET /admin/analytics/demand
-Query: `?from=2026-10-01&to=2026-10-11`
-Res 200: `[ { "hour": 8, "weekday": 1, "trips": 54 } ]`
+### GET /admin/analytics/routes  (reads D3)
+**Roles:** admin. Read-only.
+One row per route with at least one trip in range, ordered by `trips` desc, then `route_id`,
+at most 200 (hard cap).
+Res 200:
+`{ "from": "2026-10-01", "to": "2026-10-17", "routes": [ { "route_id": 1, "route_name": "Main Gate - Hostel", "trips": 320, "rated_trips": 120, "avg_rating": 4.2, "completed_trips": 150, "timed_trips": 90, "avg_duration_min": 14.5, "avg_predicted_eta_min": 12.1, "avg_delay_min": 2.4 } ] }`
+- `routes` is always an array (`[]` when there are no trips).
+- Trips with `route_id` NULL are not counted here: trips with no recommended route, and trips
+  whose route was deleted (the delete sets their route_id to NULL). /demand still counts them.
+- `trips`: all trips on the route in range. `completed_trips`: status `completed`.
+- `avg_rating`: over the `rated_trips` (rating not NULL); null when `rated_trips` is 0.
+- Timed trips: completed, with `ended_at` and `predicted_eta_min` (only set when a bus was
+  recommended, from task 4.1). `timed_trips` counts them. Over that same set:
+  `avg_duration_min` = average of (ended_at - started_at) in minutes (seconds kept),
+  `avg_predicted_eta_min`, and `avg_delay_min` = average of (duration - predicted_eta_min).
+  Negative delay = arrived earlier than predicted (not clamped). All three null when
+  `timed_trips` is 0. No delay is stored; it is derived here.
+- Averages are rounded to 1 decimal in Go, each on its own, so
+  `avg_duration_min - avg_predicted_eta_min` can differ from `avg_delay_min` by 0.1.
+Res 401: no/invalid token. Res 403: not an admin. Res 500: `internal error`
+
+### GET /admin/analytics/demand  (reads D3)
+**Roles:** admin. Read-only.
+Trips per (weekday, hour) in range, all routes (including route_id NULL), from the stored
+`start_weekday` (ISO, 1=Mon..7=Sun) and `start_hour` (0-23, campus local).
+Res 200:
+`{ "from": "2026-10-01", "to": "2026-10-17", "cells": [ { "weekday": 1, "hour": 8, "trips": 54 } ], "trips_without_context": 12 }`
+- `cells` is sparse (only cells with at least one trip), ordered by weekday, then hour,
+  always an array (`[]` when there are no trips).
+- `trips_without_context`: trips in range with `start_weekday` or `start_hour` NULL (created
+  before task 4.1). They are not in `cells`. Computed in the same query: GROUP BY
+  (start_weekday, start_hour), and the groups containing a NULL are summed.
+Res 401: no/invalid token. Res 403: not an admin. Res 500: `internal error`
 
 ## WebSocket
 Browsers can't send an Authorization header when opening a WebSocket, so the client first
