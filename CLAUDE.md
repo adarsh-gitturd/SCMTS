@@ -22,6 +22,8 @@ destination and traffic. Roles: student, driver, admin.
 - Keep files small and single-purpose.
 - After finishing: tell me how to test it, then tick the task in docs/TASKS.md.
 - Never read node_modules/, dist/, build/, or lockfiles.
+- Never commit secrets: .env files must stay out of git. If you see one tracked, tell me.
+- If a doc and the code disagree (e.g. an endpoint in API.md that is not built), tell me instead of guessing. Mark unbuilt endpoints "not built yet" in API.md.
 
 ## Docs (read only when the task needs them)
 - docs/SPEC.md   features and DFD summary

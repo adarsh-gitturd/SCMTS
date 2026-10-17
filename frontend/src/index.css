@@ -359,6 +359,75 @@ button:disabled {
   color: #555;
 }
 
+/* Alerts strip: one line per alert, capped height so the map stays visible on phones. */
+.alerts:focus {
+  outline: none;
+}
+
+.alerts__box {
+  padding: 2px 12px 4px;
+  background: #fff8e1;
+  border-top: 1px solid #e6d28a;
+  border-bottom: 1px solid #e6d28a;
+  font-size: 0.85rem;
+}
+
+.alerts__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 25vh;
+  max-height: 25dvh;
+  overflow-y: auto;
+}
+
+.alerts__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+}
+
+.alerts__glyph {
+  width: 1em;
+  text-align: center;
+  font-weight: 700;
+}
+
+.alerts__text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.alerts__item--trip .alerts__text {
+  font-weight: 600;
+}
+
+.alerts .alerts__dismiss {
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0 6px;
+  background: none;
+  color: #333;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.alerts .alerts__more {
+  padding: 2px 0;
+  background: none;
+  color: #1f5fbf;
+  text-decoration: underline;
+}
+
+.alerts button:focus-visible {
+  outline: 2px solid #1f5fbf;
+  outline-offset: 1px;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;

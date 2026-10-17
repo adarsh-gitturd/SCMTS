@@ -1,6 +1,7 @@
 import 'leaflet/dist/leaflet.css'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { MapContainer, TileLayer } from 'react-leaflet'
+import AlertsStrip from '../alerts/AlertsStrip.jsx'
 import AdvisorCard from '../advisor/AdvisorCard.jsx'
 import { nearbyReference } from '../advisor/advisorLogic.js'
 import NearbyBuses from '../advisor/NearbyBuses.jsx'
@@ -89,6 +90,7 @@ export default function LiveMap() {
   const stopsById = useMemo(() => new Map(stops.map((s) => [s.id, s])), [stops])
   const routeNames = useMemo(() => new Map(routes.map((r) => [r.id, r.name])), [routes])
   const result = trip.state.phase === 'success' ? trip.state.result : null
+  const topRec = result?.recommendations[0] ?? null
   const manualOriginId = trip.state.originMode === 'manual' ? originId : null
   const reference = useMemo(
     () => nearbyReference(result, manualOriginId, stopsById),
@@ -115,6 +117,9 @@ export default function LiveMap() {
         {conn.kind === 'forbidden' && <p className="error">You are not allowed to view live buses.</p>}
         {error && <p className="error">{error}</p>}
       </div>
+      {isStudent && !loading && (
+        <AlertsStrip buses={buses} conn={conn} busRoutes={busRoutes} routeNames={routeNames} top={topRec} />
+      )}
       {loading ? (
         <p className="map-loading">Loading map...</p>
       ) : (

@@ -36,7 +36,8 @@ One task = one fresh Claude session. Tick when done and committed.
 - [x] 3.11 Live map with bus markers (Leaflet + OpenStreetMap)
 - [x] 3.12 Destination picker + call POST /trip/create
 - [x] 3.13 Advisor card + nearby buses list
-- [ ] 3.14 Alerts strip
+- [x] 3.14 Alerts strip
+  - alerts table / GET /alerts unused in MVP; revisit after MVP
 - [ ] 3.15 Trip history + rating form
 ### Driver UI
 - [ ] 3.16 Show assigned route (GET /driver/route: role driver)

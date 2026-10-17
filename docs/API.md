@@ -81,6 +81,7 @@ Res 200: `[ { "id": 42, "route_id": 1, "bus_id": 7, "destination": "Library", "r
 Saved places. POST req: `{ "name": "Hostel", "stop_id": 8 }`
 
 ### GET /alerts
+Not built yet; the MVP derives alerts in the frontend from live bus status.
 Res 200: `[ { "id": 1, "type": "delay", "bus_id": 7, "message": "Bus 7 running 5 min late", "created_at": "..." } ]`
 
 ## Driver
