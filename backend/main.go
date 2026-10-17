@@ -79,6 +79,8 @@ func main() {
 			student.Patch("/trip/{id}/complete", handlers.CompleteTrip(db))
 			student.Get("/trips", handlers.ListTrips(db))
 
+			api.With(auth.RequireRole("driver")).Get("/driver/route", handlers.DriverRoute(db))
+
 			api.With(auth.RequireRole("student", "admin")).Post("/ws-ticket", handlers.IssueWSTicket(tickets))
 		})
 	})

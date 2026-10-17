@@ -43,6 +43,7 @@ One task = one fresh Claude session. Tick when done and committed.
   - [x] 3.15-B history + rating UI
 ### Driver UI
 - [ ] 3.16 Show assigned route (GET /driver/route: role driver)
+  - [x] 3.16-A GET /driver/route
 - [ ] 3.17 Send GPS + status updates (driver endpoints: role driver)
 - [ ] 3.18 Log passenger count (POST /driver/passengers: role driver)
 ### Admin UI

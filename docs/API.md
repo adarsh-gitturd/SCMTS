@@ -95,9 +95,15 @@ Res 200: `[ { "id": 1, "type": "delay", "bus_id": 7, "message": "Bus 7 running 5
 ## Driver
 **Roles:** driver (all endpoints in this section).
 
-### GET /driver/route
-Assigned route and stops for the logged-in driver's bus.
-Res 200: `{ "bus_id": 7, "route": { "id": 1, "name": "...", "stops": [ ... ] } }`
+### GET /driver/route  (reads D1)
+Assigned bus, route and stops for the logged-in driver (driver id from the token;
+a driver only ever sees their own bus).
+Res 200:
+`{ "bus_id": 7, "plate": "TN01AB1234", "route": { "id": 1, "name": "Main Gate - Hostel", "stops": [ { "stop_id": 3, "name": "Library", "lat": 13.0102, "lng": 80.2355, "order": 1 } ] } }`
+`stops` is ordered by `order` and is always an array (`[]` when the route has no stops).
+`route` is `null` when the bus has no route assigned.
+Res 404: `no bus assigned` (no bus has this driver).
+Res 401: no/invalid token. Res 403: not a driver. Res 500: `internal error`
 
 ### POST /driver/location  (HTTPS fallback; WebSocket preferred)
 Req:  `{ "lat": 13.01, "lng": 80.23, "speed": 22, "timestamp": "2026-10-11T09:30:05Z" }`
