@@ -146,11 +146,33 @@ Res 500: `internal error`
 **Roles:** admin (all endpoints in this section).
 
 ### Routes, stops, buses (write D1)
-- POST /admin/routes, PUT /admin/routes/{id}, DELETE /admin/routes/{id}
-- POST /admin/stops, PUT /admin/stops/{id}, DELETE /admin/stops/{id}
-- POST /admin/buses, PUT /admin/buses/{id}, DELETE /admin/buses/{id}
-Example POST /admin/stops: `{ "name": "Library", "lat": 13.0102, "lng": 80.2355 }` -> 201 `{ "id": 3 }`
+- POST /admin/routes, PUT /admin/routes/{id}, DELETE /admin/routes/{id}  (not built yet)
+- POST /admin/buses, PUT /admin/buses/{id}, DELETE /admin/buses/{id}  (not built yet)
 Example POST /admin/buses: `{ "plate": "TN01AB1234", "route_id": 1, "driver_id": 9 }`
+
+Stop body (POST and PUT): `{ "name": "Library", "lat": 13.0102, "lng": 80.2355 }`
+- All three fields required (PUT is a full replace). Unknown fields ignored. Body max 4 KB.
+- name: trimmed, 1-100 characters, no control characters (tab, newline, ...). Not unique.
+- lat -90..90, lng -180..180; rounded to 6 decimals before storing.
+`{id}` must be a positive integer, otherwise 400 `id must be a positive integer`.
+Errors: 400 bad JSON / missing field / invalid value, 401, 403 not an admin, 500 `internal error`.
+
+### POST /admin/stops
+Res 201: `{ "id": 3 }`
+
+### PUT /admin/stops/{id}
+Res 200: the stop as stored, same shape as GET /stops:
+`{ "id": 3, "name": "Library", "lat": 13.0102, "lng": 80.2355 }`
+Sending the same values again is still 200.
+Res 404: `stop not found`
+
+### DELETE /admin/stops/{id}
+Res 204: no body.
+Res 404: `stop not found`
+Res 409: `stop is in use`: the stop is on a route (route_stops), is the destination of any
+trip, or has passenger logs. Nothing is changed.
+A successful delete also deletes students' saved_places for that stop and sets
+trips.board_stop_id to NULL on past trips that boarded there.
 
 ### GET /admin/fleet  (reads D2)
 All buses with live status, driver and last update time.

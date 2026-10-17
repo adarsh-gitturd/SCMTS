@@ -85,6 +85,11 @@ func main() {
 			driver.Patch("/driver/status", handlers.DriverStatus(db))
 			driver.Post("/driver/passengers", handlers.DriverPassengers(db))
 
+			admin := api.With(auth.RequireRole("admin"))
+			admin.Post("/admin/stops", handlers.AdminCreateStop(db))
+			admin.Put("/admin/stops/{id}", handlers.AdminUpdateStop(db))
+			admin.Delete("/admin/stops/{id}", handlers.AdminDeleteStop(db))
+
 			api.With(auth.RequireRole("student", "admin")).Post("/ws-ticket", handlers.IssueWSTicket(tickets))
 		})
 	})
