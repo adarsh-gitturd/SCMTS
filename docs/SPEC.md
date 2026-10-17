@@ -27,6 +27,15 @@ default Asia/Kolkata), from the DB clock at trip start; predicted_eta_min, bus_s
 and passengers_logged (latest passenger log for that bus within 30 minutes) only when a bus
 was recommended. No delay column: duration is ended_at - started_at.
 
+D3 synthetic data (task 4.4, backend/cmd/gentrips): extra trips for analytics and AI work.
+They belong only to synthetic students (role student, email synthetic-NN@synthetic.invalid,
+a password hash nothing can match), which is the only marker. Their delays, ETAs, ratings and
+passenger counts are generated from the documented model in cmd/gentrips/gen.go and must not
+be treated as real measurements. Their predicted_eta_min is a whole-trip ETA (board to
+destination), unlike real trips, where it is the bus's ETA to the boarding stop. Remove them
+(for example before a real demo) with `go run ./cmd/gentrips -delete -yes`: it deletes those
+students' trips, then the students, in one transaction, never by date, route or id.
+
 ## Features
 
 ### Student (MVP)
@@ -99,6 +108,11 @@ See docs/TASKS.md.
 - Driver app retries sends when offline
 - HTTPS everywhere, parameterized SQL, role-based access
 - Mobile-friendly UI, especially for drivers
+
+## Not in MVP
+Saved places (/places), alerts table and GET /alerts (MVP derives alerts in the frontend),
+admin bus CRUD (/admin/buses), admin analytics (/admin/analytics/*), driver GPS over
+WebSocket (/ws/driver; MVP uses POST /driver/location).
 
 ## Out of scope (future)
 Digital twin simulation, RFID/NFC boarding, payments, multi-campus support.

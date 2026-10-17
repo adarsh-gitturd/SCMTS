@@ -2,13 +2,13 @@
 One task = one fresh Claude session. Tick when done and committed.
 
 ## Phase 1 – Assessment
-- [ ] 1.1 Write docs/SPEC.md (features per role, D1/D2/D3, MVP scope)
+- [x] 1.1 Write docs/SPEC.md (features per role, D1/D2/D3, MVP scope)
 - [ ] 1.2 Decide MVP cut line (list what is NOT in MVP)
 
 ## Phase 2 – Design
 - [x] 2.1 Design db/schema.sql (routes, stops, route_stops, buses, bus_live, trips, users)
-- [ ] 2.2 Write docs/API.md (endpoint list with request/response JSON)
-- [ ] 2.3 Create folder structure (frontend/, backend/, db/, docs/)
+- [x] 2.2 Write docs/API.md (endpoint list with request/response JSON)
+- [x] 2.3 Create folder structure (frontend/, backend/, db/, docs/)
 - [ ] 2.4 Finish admin dashboard DFD (Level 1)
 
 ## Phase 3 – MVP
@@ -63,8 +63,9 @@ One task = one fresh Claude session. Tick when done and committed.
 ## Phase 4 – Pre-AI data
 - [x] 4.1 context columns on trips (hour, weekday, predicted ETA, bus status at start, passengers; delay is derived later from ended_at - started_at)
 - [ ] 4.2 Admin analytics queries (busiest routes, average delay; /admin/analytics/*: role admin)
+  - [x] 4.2-A analytics endpoints
 - [ ] 4.3 Analytics page in admin UI
-- [ ] 4.4 Script to generate extra synthetic trip data
+- [x] 4.4 Script to generate extra synthetic trip data
 
 ## Phase 5 – AI (only after MVP is stable)
 - [ ] 5.1 Export trip data to CSV for training
