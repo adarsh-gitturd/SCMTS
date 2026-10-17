@@ -5,7 +5,8 @@ import { buildTripRequest, originFallbackMessage, parseTripResponse, tripErrorMe
 
 // phase: 'idle' | 'locating' | 'submitting' | 'success' | 'error'
 // originMode: 'gps' | 'manual' (manual after a failed location fix, kept until retryLocation)
-// result: { trip_id, destination_stop_id, recommendations: [...] } as from parseTripResponse
+// result: { trip_id, destination_stop_id, recommendations: [...], received_at } (parseTripResponse +
+// received_at = client time in ms when the response arrived; the API returns no time)
 const IDLE = { phase: 'idle', originMode: 'gps', notice: null, result: null, error: null }
 
 // POST /trip/create and its state. Each call creates a trip row, so a request only
@@ -67,7 +68,7 @@ export function useTripRequest() {
         setState((s) => ({ ...s, phase: 'error', error: tripErrorMessage(500) }))
         return
       }
-      setState((s) => ({ ...s, phase: 'success', result, error: null }))
+      setState((s) => ({ ...s, phase: 'success', result: { ...result, received_at: Date.now() }, error: null }))
     } finally {
       // A reset during the request already freed the guard for the next one.
       if (reqRef.current === id) busyRef.current = false

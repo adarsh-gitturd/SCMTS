@@ -5,12 +5,14 @@ import { STATUS_INFO, busIcon } from './busIcons.js'
 // Memoized: re-renders only when this bus's data or staleness changes. react-leaflet
 // moves the existing marker (setLatLng) instead of re-creating it.
 // highlight = top recommended bus of the current trip.
-function BusMarker({ bus, stale, highlight = false }) {
+// onMarker(bus_id, marker | null) registers the Leaflet marker (used to open its popup).
+function BusMarker({ bus, stale, highlight = false, onMarker }) {
   const info = STATUS_INFO[bus.status] ?? STATUS_INFO.unknown
   const label = `Bus ${bus.bus_id}: ${info.label}${stale ? ' (stale)' : ''}${highlight ? ', recommended' : ''}`
 
   return (
     <Marker
+      ref={onMarker ? (m) => onMarker(bus.bus_id, m) : undefined}
       position={[bus.lat, bus.lng]}
       icon={busIcon(bus.status, stale, highlight)}
       zIndexOffset={highlight ? 1000 : 0}

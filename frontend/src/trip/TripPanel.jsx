@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { sortStopsByName, stopLabel } from './tripLogic.js'
+import { useMemo } from 'react'
+import { sortStopsByName } from './tripLogic.js'
 
 function buttonText(state) {
   switch (state.phase) {
@@ -14,11 +14,10 @@ function buttonText(state) {
   }
 }
 
-// Destination picker + minimal trip result (the result view is replaced in 3.13).
-// destId and the trip hook live in LiveMap so the map and later siblings can use them.
-export default function TripPanel({ stops, destId, onDestinationChange, trip }) {
+// Destination picker. The result is shown by AdvisorCard (a sibling).
+// destId, originId and the trip hook live in LiveMap so the map and the sibling panels can use them.
+export default function TripPanel({ stops, destId, onDestinationChange, originId, onOriginChange, trip }) {
   const { state, submit, reset, retryLocation } = trip
-  const [originId, setOriginId] = useState(null)
   const sorted = useMemo(() => sortStopsByName(stops), [stops])
   const byId = useMemo(() => new Map(stops.map((s) => [s.id, s])), [stops])
 
@@ -35,7 +34,7 @@ export default function TripPanel({ stops, destId, onDestinationChange, trip }) 
   }
 
   function handleOriginChange(e) {
-    setOriginId(e.target.value === '' ? null : Number(e.target.value))
+    onOriginChange(e.target.value === '' ? null : Number(e.target.value))
     reset()
   }
 
@@ -84,28 +83,6 @@ export default function TripPanel({ stops, destId, onDestinationChange, trip }) 
           {state.error}
         </p>
       )}
-
-      <div aria-live="polite">
-        {state.phase === 'success' && state.result && (
-          <div className="trip-result">
-            <p>Trip #{state.result.trip_id}</p>
-            {state.result.recommendations.length === 0 ? (
-              <p>No bus is available right now.</p>
-            ) : (
-              <ul>
-                {state.result.recommendations.map((r) => (
-                  <li key={`${r.rank}-${r.bus_id}`}>
-                    Bus {r.bus_id} · board at {stopLabel(byId, r.board_stop_id)} · ETA {r.eta_minutes} min
-                  </li>
-                ))}
-              </ul>
-            )}
-            <button type="button" className="link-button" onClick={reset}>
-              Start over
-            </button>
-          </div>
-        )}
-      </div>
     </form>
   )
 }

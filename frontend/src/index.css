@@ -208,7 +208,8 @@ button:disabled {
   box-shadow: 0 0 0 3px #e65100, 0 0 0 5px #fff;
 }
 
-/* Trip panel: above the map on phones (capped height), floating card on wide screens. */
+/* Side panel (trip form, advisor card, nearby list): above the map on phones
+   (capped height, scrolls), floating card on wide screens. */
 .map-area {
   position: relative;
   flex: 1;
@@ -217,10 +218,10 @@ button:disabled {
   flex-direction: column;
 }
 
-.trip-panel {
+.side-panel {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   max-height: 40vh;
   max-height: 40dvh;
   overflow-y: auto;
@@ -229,6 +230,26 @@ button:disabled {
   border-top: 1px solid #ddd;
   border-bottom: 1px solid #ddd;
   font-size: 0.95rem;
+}
+
+.side-panel h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.side-panel h3 {
+  margin: 4px 0 0;
+  font-size: 0.95rem;
+}
+
+.side-panel p {
+  margin: 0;
+}
+
+.trip-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .trip-panel select {
@@ -244,26 +265,11 @@ button:disabled {
   padding: 10px;
 }
 
-.trip-panel p {
-  margin: 0;
-}
-
 .trip-panel__notice {
   color: #6b4e00;
 }
 
-.trip-result {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.trip-result ul {
-  margin: 0;
-  padding-left: 20px;
-}
-
-.trip-panel .link-button {
+.side-panel .link-button {
   align-self: flex-start;
   padding: 4px 0;
   background: none;
@@ -271,8 +277,100 @@ button:disabled {
   text-decoration: underline;
 }
 
+/* Advisor card */
+.advisor {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 10px;
+  border-top: 1px solid #ddd;
+}
+
+.advisor__top {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.advisor__asof,
+.nearby__note {
+  color: #555;
+  font-size: 0.85rem;
+}
+
+.advisor__live--changed,
+.advisor__live--stale,
+.advisor__live--missing {
+  font-weight: 600;
+  color: #6b4e00;
+}
+
+.advisor__others {
+  margin: 0;
+  padding-left: 24px;
+  font-size: 0.9rem;
+}
+
+/* Nearby buses list */
+.nearby {
+  padding-top: 10px;
+  border-top: 1px solid #ddd;
+}
+
+.nearby summary {
+  cursor: pointer;
+}
+
+.nearby summary h2 {
+  display: inline;
+}
+
+.nearby__list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.side-panel .nearby__item {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 6px 8px;
+  text-align: left;
+  background: #f4f5f7;
+  color: inherit;
+  border: 1px solid #ddd;
+}
+
+.side-panel .nearby__item:focus-visible {
+  outline: 2px solid #1f5fbf;
+  outline-offset: 1px;
+}
+
+.nearby__title {
+  font-weight: 600;
+}
+
+.nearby__hint {
+  color: #555;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
 @media (min-width: 768px) {
-  .trip-panel {
+  .side-panel {
     position: absolute;
     top: 10px;
     right: 10px;
