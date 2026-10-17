@@ -29,7 +29,7 @@ One task = one fresh Claude session. Tick when done and committed.
   - [x] 3.9-A ticket system: wsticket package, POST /api/ws-ticket (student, admin)
   - [x] 3.9-B GET /ws/buses live feed: hub package (one shared poller), ticket + Origin check,
         route mounted outside the request logger so the ticket is never logged
-  - [x] 3.9-C WS /ws/driver (driver GPS over WebSocket)
+  - [ ] 3.9-C WS /ws/driver (driver GPS over WebSocket)
   - [x] 3.9-D ranking skips buses on break (out_of_service and break excluded, delayed eligible)
 ### Student UI
 - [x] 3.10 React skeleton + routing + API helper (Vite + react-router-dom, login, sessionStorage auth)
@@ -45,7 +45,9 @@ One task = one fresh Claude session. Tick when done and committed.
 - [x] 3.16 Show assigned route (GET /driver/route: role driver)
   - [x] 3.16-A GET /driver/route
   - [x] 3.16-B driver route page
-- [ ] 3.17 Send GPS + status updates (driver endpoints: role driver)
+- [x] 3.17 Send GPS + status updates (driver endpoints: role driver)
+  - [x] 3.17-A driver location + status endpoints
+  - [x] 3.17-B driver controls UI
 - [ ] 3.18 Log passenger count (POST /driver/passengers: role driver)
 ### Admin UI
 - [ ] 3.19 CRUD routes and stops (writes D1; /admin/*: role admin)

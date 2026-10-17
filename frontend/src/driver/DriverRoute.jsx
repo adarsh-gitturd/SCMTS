@@ -1,3 +1,4 @@
+import DriverControls from './DriverControls.jsx'
 import { driverRouteErrorMessage, driverRouteView } from './driverLogic.js'
 import DriverRouteMap from './DriverRouteMap.jsx'
 import { useDriverRoute } from './useDriverRoute.js'
@@ -36,6 +37,9 @@ export default function DriverRoute() {
     return (
       <section className="driver">
         <BusInfo data={data} />
+        {/* Only in this view: the other views have a Retry button that resets the route
+            state to loading, which would unmount the controls and silently end a shift. */}
+        <DriverControls />
         <h2>{route.name}</h2>
         <ol className="driver-stops">
           {route.stops.map((s) => (

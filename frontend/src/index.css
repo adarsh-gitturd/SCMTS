@@ -692,3 +692,80 @@ button:disabled {
   height: 240px;
   border-radius: 8px;
 }
+
+/* Driver shift controls: big tap targets, status shown by symbol + text, not colour alone. */
+.shift {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.shift__phase {
+  font-weight: 700;
+}
+
+.shift__phase--sharing {
+  color: #1a6b2f;
+}
+
+.shift__main {
+  min-height: 56px;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.shift__main--stop {
+  background: #a3261b;
+}
+
+.shift__live:empty {
+  display: none;
+}
+
+.shift__message {
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #fff4d6;
+  color: #5c4300;
+}
+
+.shift__sent,
+.shift__note {
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.shift__statuses {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.shift__status {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 1.05rem;
+  background: #e8eef8;
+  color: #1a1a1a;
+  border: 2px solid transparent;
+}
+
+.shift__status[aria-pressed='true'] {
+  background: #1f5fbf;
+  color: #fff;
+  border-color: #0e3a7a;
+  font-weight: 700;
+}
+
+.shift__glyph {
+  font-weight: 700;
+  min-width: 1.2em;
+  text-align: center;
+}

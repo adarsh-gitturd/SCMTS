@@ -105,13 +105,27 @@ Res 200:
 Res 404: `no bus assigned` (no bus has this driver).
 Res 401: no/invalid token. Res 403: not a driver. Res 500: `internal error`
 
-### POST /driver/location  (HTTPS fallback; WebSocket preferred)
-Req:  `{ "lat": 13.01, "lng": 80.23, "speed": 22, "timestamp": "2026-10-11T09:30:05Z" }`
-Res 204. Overwrites that bus's row in D2.
+### POST /driver/location  (upserts D2)
+Req:  `{ "lat": 13.01, "lng": 80.23, "speed": 22 }`  (speed in km/h)
+All three fields required (missing `speed` is 400, not 0). lat -90..90, lng -180..180,
+speed 0..200. Body max 1 KB. Unknown fields (e.g. a client `timestamp`) are ignored;
+the server sets `updated_at`.
+Writes lat, lng, speed and `updated_at` of the driver's own bus (driver id from the
+token; no bus id is accepted). Never changes `status` on an existing row. If the bus
+has no D2 row yet, one is created with status `out_of_service`.
+Res 204.
+Res 400: invalid JSON / validation message. Res 404: `no bus assigned`.
+Res 429: `too many updates` (less than 500 ms since this driver's last accepted write;
+in memory, per server process). Res 401: no/invalid token. Res 403: not a driver.
+Res 500: `internal error`
 
-### PATCH /driver/status
-Req:  `{ "status": "delayed" }`  (on_route | delayed | break | out_of_service)
+### PATCH /driver/status  (updates D2)
+Req:  `{ "status": "delayed" }`  (exactly one of on_route | delayed | break | out_of_service)
+Sets the status of the driver's own bus and bumps `updated_at`.
 Res 200: `{ "bus_id": 7, "status": "delayed" }`
+Res 400: invalid JSON or any other value. Res 404: `no bus assigned`.
+Res 409: `send a location first` (bus has no D2 row yet).
+Res 401: no/invalid token. Res 403: not a driver. Res 500: `internal error`
 
 ### POST /driver/passengers  (INSERT D3)
 Req:  `{ "count": 18, "stop_id": 3 }`
@@ -179,7 +193,7 @@ On close, get a new ticket and reconnect; the new snapshot replaces local state.
 Server config: `ALLOWED_ORIGINS` env var, comma-separated, e.g.
 `http://localhost:5173,https://scmts.example.com`. The server refuses to start without it.
 
-### WS /ws/driver  (driver)
+### WS /ws/driver  (driver)  (not built yet)
 **Roles:** driver.
 Client sends location every ~3s: `{ "lat": 13.01, "lng": 80.23, "speed": 22, "ts": "..." }`
 Server acks with `{ "ok": true }`. Client buffers and retries if the connection drops.
