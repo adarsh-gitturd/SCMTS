@@ -17,6 +17,12 @@ export default function AdminHome() {
             <span className="admin-home__text">Add, edit and delete routes and their stop order</span>
           </Link>
         </li>
+        <li>
+          <Link to="/admin/fleet" className="admin-home__link">
+            <span className="admin-home__title">Fleet</span>
+            <span className="admin-home__text">See every bus: status, position, driver, route and last update</span>
+          </Link>
+        </li>
       </ul>
     </AdminLayout>
   )

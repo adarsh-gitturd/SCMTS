@@ -21,6 +21,7 @@ export default function AdminLayout({ title, children }) {
       <nav className="admin-nav" aria-label="Admin">
         <NavLink to="/admin/stops">Stops</NavLink>
         <NavLink to="/admin/routes">Routes</NavLink>
+        <NavLink to="/admin/fleet">Fleet</NavLink>
         <NavLink to="/admin" end>
           Admin home
         </NavLink>
