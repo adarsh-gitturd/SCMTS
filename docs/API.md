@@ -73,9 +73,17 @@ Res 404: `trip not found` (also for trips of another student)
 Res 409: `trip already completed`
 Rating can only be set once: a completed trip cannot be re-rated or changed.
 
-### GET /trips
-History for the logged-in student, newest first.
-Res 200: `[ { "id": 42, "route_id": 1, "bus_id": 7, "destination": "Library", "rating": 4, "started_at": "...", "ended_at": "..." } ]`
+### GET /trips  (reads D3)
+**Roles:** student (own trips only; student id from the token).
+History for the logged-in student, newest first (`started_at` desc, then `id` desc).
+Query: `?limit=N` (optional, default 50, 1-100)
+Res 200 (always an array, `[]` when there are no trips):
+`[ { "id": 42, "status": "completed", "destination": "Library", "destination_stop_id": 5, "route_id": 1, "bus_id": 7, "board_stop_id": 3, "rating": 4, "feedback": "On time", "started_at": "2026-10-17T10:56:14Z", "ended_at": "2026-10-17T11:20:02Z" } ]`
+`status` is `started` or `completed`. `route_id`, `bus_id`, `board_stop_id`, `rating`, `feedback`
+and `ended_at` are `null` when not set (e.g. no bus qualified, or trip not completed yet).
+Timestamps are RFC3339 UTC.
+Res 400: `limit must be an integer between 1 and 100`
+Res 401: no/invalid token. Res 403: not a student. Res 500: `internal error`
 
 ### GET /places, POST /places
 Saved places. POST req: `{ "name": "Hostel", "stop_id": 8 }`

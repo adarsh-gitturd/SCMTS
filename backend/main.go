@@ -77,6 +77,7 @@ func main() {
 			student := api.With(auth.RequireRole("student"))
 			student.Post("/trip/create", handlers.CreateTrip(db))
 			student.Patch("/trip/{id}/complete", handlers.CompleteTrip(db))
+			student.Get("/trips", handlers.ListTrips(db))
 
 			api.With(auth.RequireRole("student", "admin")).Post("/ws-ticket", handlers.IssueWSTicket(tickets))
 		})
