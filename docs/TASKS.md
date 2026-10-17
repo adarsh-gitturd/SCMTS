@@ -59,6 +59,7 @@ One task = one fresh Claude session. Tick when done and committed.
 - [x] 3.20 Fleet overview (reads D2; GET /admin/fleet: role admin)
   - [x] 3.20-A GET /admin/fleet
   - [x] 3.20-B fleet overview page
+- [x] P1 lazy-load admin pages
 
 ## Phase 4 – Pre-AI data
 - [x] 4.1 context columns on trips (hour, weekday, predicted ETA, bus status at start, passengers; delay is derived later from ended_at - started_at)
