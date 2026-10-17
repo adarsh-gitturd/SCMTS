@@ -21,6 +21,12 @@ Rule-based logic first; AI refines predictions in Phase 5 and never replaces the
 | D2 live bus data | lat, lng, speed, status, updated_at per bus | Overwritten every few seconds by driver; student/admin read |
 | D3 trip history | trips, ratings, passenger counts | Append-only. Student and driver write; admin (and later AI) read |
 
+D3 trip context (set once in the trip INSERT, NULL on trips created before task 4.1):
+start_hour (0-23) and start_weekday (ISO, 1=Mon..7=Sun) in campus local time (CAMPUS_TZ,
+default Asia/Kolkata), from the DB clock at trip start; predicted_eta_min, bus_status_at_start
+and passengers_logged (latest passenger log for that bus within 30 minutes) only when a bus
+was recommended. No delay column: duration is ended_at - started_at.
+
 ## Features
 
 ### Student (MVP)

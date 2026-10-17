@@ -36,8 +36,10 @@ type createTripResponse struct {
 // CreateTrip records a trip (D3) and returns ranked bus recommendations.
 // The stop check, the D1/D2 reads and the INSERT run in one transaction,
 // so the ranking and the stored trip come from the same snapshot.
+// The trip's context columns (hour/weekday in loc, ETA, bus status,
+// passengers) are filled in the same INSERT.
 // POST /api/trip/create
-func CreateTrip(db *sql.DB) http.HandlerFunc {
+func CreateTrip(db *sql.DB, loc *time.Location) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		studentID, _, ok := auth.UserFromContext(r.Context())
 		if !ok {
@@ -110,15 +112,52 @@ func CreateTrip(db *sql.DB) http.HandlerFunc {
 
 		recs := ranking.Rank(ranking.Point{Lat: lat, Lng: lng}, destID, buses, routes)
 
+		// One DB-clock instant is the trip start: it sets started_at, the
+		// hour/weekday and the passenger window, so they always agree.
+		var startedAt time.Time
+		if err := tx.QueryRowContext(ctx, `SELECT CURRENT_TIMESTAMP`).Scan(&startedAt); err != nil {
+			log.Printf("trips: current time: %v", err)
+			writeError(w, http.StatusInternalServerError, "internal error")
+			return
+		}
+		startHour, startWeekday := tripTimeContext(startedAt, loc)
+
 		// Store the top pick, or NULLs when nothing qualifies.
-		var busID, routeID, boardStopID any
+		var busID, routeID, boardStopID, etaMin, busStatus, passengers any
 		if len(recs) > 0 {
-			busID, routeID, boardStopID = recs[0].BusID, recs[0].RouteID, recs[0].BoardStopID
+			top := recs[0]
+			busID, routeID, boardStopID = top.BusID, top.RouteID, top.BoardStopID
+			// NULL rather than a failed INSERT if it does not fit SMALLINT UNSIGNED.
+			if top.EtaMinutes >= 0 && top.EtaMinutes <= 65535 {
+				etaMin = top.EtaMinutes
+			}
+			if s, ok := liveStatus(buses, top.BusID); ok {
+				busStatus = s
+			}
+			// Plain (non-locking) snapshot read: latest count in the last 30 minutes.
+			var count int64
+			err = tx.QueryRowContext(ctx, `
+				SELECT count FROM passenger_logs
+				WHERE bus_id = ? AND logged_at >= ? - INTERVAL 30 MINUTE
+				ORDER BY logged_at DESC, id DESC
+				LIMIT 1`,
+				top.BusID, startedAt).Scan(&count)
+			switch {
+			case errors.Is(err, sql.ErrNoRows):
+			case err != nil:
+				log.Printf("trips: passenger lookup: %v", err)
+				writeError(w, http.StatusInternalServerError, "internal error")
+				return
+			default:
+				passengers = count
+			}
 		}
 		res, err := tx.ExecContext(ctx, `
-			INSERT INTO trips (student_id, origin_lat, origin_lng, dest_stop_id, bus_id, route_id, board_stop_id)
-			VALUES (?, ?, ?, ?, ?, ?, ?)`,
-			studentID, lat, lng, destID, busID, routeID, boardStopID)
+			INSERT INTO trips (student_id, origin_lat, origin_lng, dest_stop_id, bus_id, route_id, board_stop_id,
+				started_at, start_hour, start_weekday, predicted_eta_min, bus_status_at_start, passengers_logged)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			studentID, lat, lng, destID, busID, routeID, boardStopID,
+			startedAt, startHour, startWeekday, etaMin, busStatus, passengers)
 		if err != nil {
 			log.Printf("trips: insert: %v", err)
 			writeError(w, http.StatusInternalServerError, "internal error")

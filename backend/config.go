@@ -2,7 +2,10 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"os"
+	"time"
+	_ "time/tzdata" // CAMPUS_TZ works without OS zone files
 )
 
 // Config holds settings read from environment variables.
@@ -14,6 +17,7 @@ type Config struct {
 	DBName     string
 	Port       string
 	JWTSecret  string
+	CampusLoc  *time.Location // CAMPUS_TZ, default Asia/Kolkata
 }
 
 func loadConfig() (Config, error) {
@@ -32,6 +36,12 @@ func loadConfig() (Config, error) {
 	if cfg.JWTSecret == "" {
 		return Config{}, errors.New("JWT_SECRET is required")
 	}
+	tz := getEnv("CAMPUS_TZ", "Asia/Kolkata")
+	loc, err := time.LoadLocation(tz)
+	if err != nil {
+		return Config{}, fmt.Errorf("CAMPUS_TZ %q is not a valid time zone: %w", tz, err)
+	}
+	cfg.CampusLoc = loc
 	return cfg, nil
 }
 

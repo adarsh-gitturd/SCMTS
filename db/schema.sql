@@ -2,6 +2,8 @@
 -- Run: mysql -u <user> -p scmts < db/schema.sql
 
 -- Safe to re-run: existing tables and data are kept.
+-- Re-running never adds columns to an existing table: upgrade existing
+-- databases with the files in db/migrations/ (each run once).
 
 SET NAMES utf8mb4;
 
@@ -83,7 +85,14 @@ CREATE TABLE IF NOT EXISTS trips (
     feedback      VARCHAR(500) NULL,
     started_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     ended_at      TIMESTAMP NULL,
+    start_hour          TINYINT UNSIGNED NULL,  -- 0..23, campus local time
+    start_weekday       TINYINT UNSIGNED NULL,  -- ISO: 1=Mon .. 7=Sun
+    predicted_eta_min   SMALLINT UNSIGNED NULL, -- eta_minutes of the top recommendation
+    bus_status_at_start ENUM('on_route', 'delayed', 'break', 'out_of_service') NULL,
+    passengers_logged   SMALLINT UNSIGNED NULL, -- latest passenger_logs count, last 30 min
     CONSTRAINT chk_trips_rating CHECK (rating IS NULL OR rating BETWEEN 1 AND 5),
+    CONSTRAINT chk_trips_start_hour    CHECK (start_hour IS NULL OR start_hour BETWEEN 0 AND 23),
+    CONSTRAINT chk_trips_start_weekday CHECK (start_weekday IS NULL OR start_weekday BETWEEN 1 AND 7),
     KEY idx_trips_student_started (student_id, started_at),
     KEY idx_trips_route_started (route_id, started_at),
     KEY idx_trips_started (started_at),

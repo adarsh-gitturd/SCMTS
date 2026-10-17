@@ -61,7 +61,7 @@ One task = one fresh Claude session. Tick when done and committed.
   - [x] 3.20-B fleet overview page
 
 ## Phase 4 – Pre-AI data
-- [ ] 4.1 Add context columns to trips (time, weekday, delay, passengers)
+- [x] 4.1 context columns on trips (hour, weekday, predicted ETA, bus status at start, passengers; delay is derived later from ended_at - started_at)
 - [ ] 4.2 Admin analytics queries (busiest routes, average delay; /admin/analytics/*: role admin)
 - [ ] 4.3 Analytics page in admin UI
 - [ ] 4.4 Script to generate extra synthetic trip data

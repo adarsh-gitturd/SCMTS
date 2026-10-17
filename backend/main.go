@@ -75,7 +75,7 @@ func main() {
 			api.Get("/buses", handlers.ListBuses(db))
 
 			student := api.With(auth.RequireRole("student"))
-			student.Post("/trip/create", handlers.CreateTrip(db))
+			student.Post("/trip/create", handlers.CreateTrip(db, cfg.CampusLoc))
 			student.Patch("/trip/{id}/complete", handlers.CompleteTrip(db))
 			student.Get("/trips", handlers.ListTrips(db))
 
