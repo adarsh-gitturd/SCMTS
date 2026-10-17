@@ -1,4 +1,8 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
+import AdminHome from './admin/AdminHome.jsx'
+import AdminRoutesPage from './admin/AdminRoutesPage.jsx'
+import AdminStopsPage from './admin/AdminStopsPage.jsx'
+import RequireAdmin from './admin/RequireAdmin.jsx'
 import { RedirectIfAuthed, RequireAuth } from './auth/guards.jsx'
 import DriverPage from './driver/DriverPage.jsx'
 import HistoryPage from './history/HistoryPage.jsx'
@@ -37,6 +41,36 @@ export default function App() {
         element={
           <RequireAuth>
             <DriverPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <RequireAuth>
+            <RequireAdmin>
+              <AdminHome />
+            </RequireAdmin>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/admin/stops"
+        element={
+          <RequireAuth>
+            <RequireAdmin>
+              <AdminStopsPage />
+            </RequireAdmin>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/admin/routes"
+        element={
+          <RequireAuth>
+            <RequireAdmin>
+              <AdminRoutesPage />
+            </RequireAdmin>
           </RequireAuth>
         }
       />

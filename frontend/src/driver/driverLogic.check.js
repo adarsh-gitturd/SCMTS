@@ -3,10 +3,10 @@ import assert from 'node:assert/strict'
 import { homePathFor } from '../auth/homePath.js'
 import { driverRouteErrorMessage, driverRouteView, parseDriverRoute, toMapLayers } from './driverLogic.js'
 
-// homePathFor: driver -> /driver, everyone else -> /
+// homePathFor: driver -> /driver, admin -> /admin, everyone else -> /
 assert.equal(homePathFor('driver'), '/driver')
 assert.equal(homePathFor('student'), '/')
-assert.equal(homePathFor('admin'), '/')
+assert.equal(homePathFor('admin'), '/admin')
 assert.equal(homePathFor(undefined), '/')
 assert.equal(homePathFor('unknown'), '/')
 

@@ -66,4 +66,7 @@ export const api = {
   get: (path) => request('GET', `/api${path}`),
   post: (path, body) => request('POST', `/api${path}`, body),
   patch: (path, body) => request('PATCH', `/api${path}`, body),
+  put: (path, body) => request('PUT', `/api${path}`, body),
+  // 204 has no body: resolves to null.
+  delete: (path) => request('DELETE', `/api${path}`),
 }
