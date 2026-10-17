@@ -1,9 +1,14 @@
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
+import { homePathFor } from '../auth/homePath.js'
 import { useAuth } from '../auth/useAuth.js'
 import LiveMap from '../map/LiveMap.jsx'
 
 export default function HomePage() {
   const { user, logout } = useAuth()
+
+  // Roles with their own home (driver) go there before LiveMap mounts (no WebSocket).
+  const home = homePathFor(user?.role)
+  if (home !== '/') return <Navigate to={home} replace />
 
   return (
     <main className="app">

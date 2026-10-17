@@ -1,4 +1,5 @@
 import { Link, Navigate } from 'react-router-dom'
+import { homePathFor } from '../auth/homePath.js'
 import { useAuth } from '../auth/useAuth.js'
 import TripCard from './TripCard.jsx'
 import { useTripHistory } from './useTripHistory.js'
@@ -7,8 +8,8 @@ export default function HistoryPage() {
   const { user, logout } = useAuth()
   const { state, submitRating, retry } = useTripHistory()
 
-  // Students only; a driver or admin who opens /history is sent to the map.
-  if (user?.role !== 'student') return <Navigate to="/" replace />
+  // Students only; anyone else goes straight to their own home (one hop, no loop).
+  if (user?.role !== 'student') return <Navigate to={homePathFor(user?.role)} replace />
 
   const { phase, error, trips, routesById, stopsById, atLimit } = state
 

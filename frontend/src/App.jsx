@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { RedirectIfAuthed, RequireAuth } from './auth/guards.jsx'
+import DriverPage from './driver/DriverPage.jsx'
 import HistoryPage from './history/HistoryPage.jsx'
 import HomePage from './pages/HomePage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
@@ -31,7 +32,15 @@ export default function App() {
           </RequireAuth>
         }
       />
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route
+        path="/driver"
+        element={
+          <RequireAuth>
+            <DriverPage />
+          </RequireAuth>
+        }
+      />
+      <Route path="*"element={<Navigate to="/" replace />} />
     </Routes>
   )
 }
