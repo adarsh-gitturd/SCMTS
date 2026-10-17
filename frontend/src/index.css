@@ -71,3 +71,216 @@ button:disabled {
   margin: 0;
   color: #b00020;
 }
+
+/* Map page: header + map filling the rest of the screen (dvh for mobile browser bars). */
+.app {
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1;
+}
+
+.app-header h1 {
+  font-size: 1.05rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-header button {
+  padding: 8px 12px;
+  flex-shrink: 0;
+}
+
+.map-wrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.map-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+}
+
+.map {
+  flex: 1;
+  min-height: 0;
+}
+
+.map-loading {
+  margin: 16px;
+}
+
+/* Connection status badge */
+.conn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #ccc;
+  font-size: 0.85rem;
+}
+
+.conn__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #888;
+}
+
+.conn--live .conn__dot {
+  background: #1a7f37;
+}
+
+.conn--reconnecting .conn__dot {
+  background: #b58100;
+}
+
+.conn--forbidden .conn__dot {
+  background: #b00020;
+}
+
+/* Bus markers (L.divIcon). Colour + glyph per status. */
+.bus-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1;
+  transition: transform 1s linear, opacity 0.3s;
+}
+
+/* No glide while zooming, or markers drift away from the map. */
+.leaflet-zoom-anim .bus-icon {
+  transition: none;
+}
+
+.bus-icon--on_route {
+  background: #1a7f37;
+}
+
+.bus-icon--delayed {
+  background: #c25e00;
+}
+
+.bus-icon--break {
+  background: #5a5fd6;
+}
+
+.bus-icon--out_of_service {
+  background: #555;
+}
+
+.bus-icon--unknown {
+  background: #888;
+}
+
+.bus-icon--stale {
+  opacity: 0.4;
+}
+
+/* Top recommended bus of the current trip */
+.bus-icon--top {
+  box-shadow: 0 0 0 3px #e65100, 0 0 0 5px #fff;
+}
+
+/* Trip panel: above the map on phones (capped height), floating card on wide screens. */
+.map-area {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.trip-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 40vh;
+  max-height: 40dvh;
+  overflow-y: auto;
+  padding: 10px 12px;
+  background: #fff;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  font-size: 0.95rem;
+}
+
+.trip-panel select {
+  font: inherit;
+  font-weight: 400;
+  padding: 8px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.trip-panel button {
+  padding: 10px;
+}
+
+.trip-panel p {
+  margin: 0;
+}
+
+.trip-panel__notice {
+  color: #6b4e00;
+}
+
+.trip-result {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.trip-result ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.trip-panel .link-button {
+  align-self: flex-start;
+  padding: 4px 0;
+  background: none;
+  color: #1f5fbf;
+  text-decoration: underline;
+}
+
+@media (min-width: 768px) {
+  .trip-panel {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000; /* above Leaflet panes and controls */
+    width: 320px;
+    max-height: calc(100% - 20px);
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
+  }
+}

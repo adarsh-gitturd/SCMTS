@@ -9,6 +9,8 @@ export default defineConfig({
     proxy: {
       '/auth': 'http://localhost:8080',
       '/api': 'http://localhost:8080',
+      // No changeOrigin: the backend checks the browser's Origin (http://localhost:5173).
+      '/ws': { target: 'http://localhost:8080', ws: true },
     },
   },
 })

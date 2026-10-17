@@ -33,8 +33,8 @@ One task = one fresh Claude session. Tick when done and committed.
   - [x] 3.9-D ranking skips buses on break (out_of_service and break excluded, delayed eligible)
 ### Student UI
 - [x] 3.10 React skeleton + routing + API helper (Vite + react-router-dom, login, sessionStorage auth)
-- [ ] 3.11 Live map with bus markers (Leaflet + OpenStreetMap)
-- [ ] 3.12 Destination picker + call POST /trip/create
+- [x] 3.11 Live map with bus markers (Leaflet + OpenStreetMap)
+- [x] 3.12 Destination picker + call POST /trip/create
 - [ ] 3.13 Advisor card + nearby buses list
 - [ ] 3.14 Alerts strip
 - [ ] 3.15 Trip history + rating form

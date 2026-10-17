@@ -1,2 +1,6 @@
-* API.md could go into/docs
-    - if it does, be sure to mention it in CLAUDE.md
+
+set -a; source .env; set +a
+
+** TO KILL A RUNNING PROCESS **
+sudo ss -tlnp | grep :8080
+sudo kill -9 <PID>
