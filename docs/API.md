@@ -202,7 +202,18 @@ A successful delete also deletes the route's stop list (route_stops) and sets
 trips.route_id to NULL on past trips of that route.
 
 ### GET /admin/fleet  (reads D2)
-All buses with live status, driver and last update time.
+**Roles:** admin. Read-only.
+All buses with live data, route and driver name, ordered by bus id, at most 500 (hard cap,
+no truncation flag).
+Res 200:
+`{ "server_time": "2026-10-17T10:56:14Z", "buses": [ { "bus_id": 1, "plate": "KL-07-CB-1101", "route_id": 1, "route_name": "Main Gate - Hostel", "driver_id": 9, "driver_name": "Ravi", "live": { "lat": 10.0436, "lng": 76.3241, "speed": 22, "status": "on_route", "updated_at": "2026-10-17T10:56:11Z" } } ] }`
+- `buses` is always an array (`[]` when there are no buses).
+- `live` is null when the bus has no bus_live row yet.
+- `route_id`/`route_name` null when no route assigned; `driver_id`/`driver_name` null when no driver.
+- `server_time` is the database clock (CURRENT_TIMESTAMP, same query), so it can be compared
+  with `updated_at` to see how old a position is. Times are RFC3339 UTC.
+- Only the driver's name is returned from users (no email, role, etc.).
+Res 401: no/invalid token. Res 403: not an admin. Res 500: `internal error`
 
 ### GET /admin/analytics/routes  (reads D3)
 Res 200: `[ { "route_id": 1, "trips": 320, "avg_rating": 4.2, "avg_delay_min": 3.1 } ]`

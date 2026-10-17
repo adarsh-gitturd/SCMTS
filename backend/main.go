@@ -92,6 +92,7 @@ func main() {
 			admin.Post("/admin/routes", handlers.AdminCreateRoute(db))
 			admin.Put("/admin/routes/{id}", handlers.AdminUpdateRoute(db))
 			admin.Delete("/admin/routes/{id}", handlers.AdminDeleteRoute(db))
+			admin.Get("/admin/fleet", handlers.AdminFleet(db))
 
 			api.With(auth.RequireRole("student", "admin")).Post("/ws-ticket", handlers.IssueWSTicket(tickets))
 		})
