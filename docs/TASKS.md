@@ -38,8 +38,9 @@ One task = one fresh Claude session. Tick when done and committed.
 - [x] 3.13 Advisor card + nearby buses list
 - [x] 3.14 Alerts strip
   - alerts table / GET /alerts unused in MVP; revisit after MVP
-- [ ] 3.15 Trip history + rating form
+- [x] 3.15 Trip history + rating form
   - [x] 3.15-A GET /trips
+  - [x] 3.15-B history + rating UI
 ### Driver UI
 - [ ] 3.16 Show assigned route (GET /driver/route: role driver)
 - [ ] 3.17 Send GPS + status updates (driver endpoints: role driver)
