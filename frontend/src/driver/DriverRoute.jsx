@@ -1,6 +1,7 @@
 import DriverControls from './DriverControls.jsx'
 import { driverRouteErrorMessage, driverRouteView } from './driverLogic.js'
 import DriverRouteMap from './DriverRouteMap.jsx'
+import PassengerLog from './PassengerLog.jsx'
 import { useDriverRoute } from './useDriverRoute.js'
 
 // Messages for 200 responses without a usable route. Error messages come from driverRouteErrorMessage.
@@ -40,6 +41,7 @@ export default function DriverRoute() {
         {/* Only in this view: the other views have a Retry button that resets the route
             state to loading, which would unmount the controls and silently end a shift. */}
         <DriverControls />
+        <PassengerLog stops={route.stops} />
         <h2>{route.name}</h2>
         <ol className="driver-stops">
           {route.stops.map((s) => (

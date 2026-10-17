@@ -769,3 +769,75 @@ button:disabled {
   min-width: 1.2em;
   text-align: center;
 }
+
+/* Driver passenger count form: 48px+ tap targets, result shown by symbol + text, not colour alone. */
+.passengers {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.passengers__form fieldset {
+  margin: 0;
+  padding: 0;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.passengers__form legend {
+  padding: 0;
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+
+.passengers__form select,
+.passengers__form input {
+  min-height: 48px;
+  font: inherit;
+  font-size: 1.1rem;
+  padding: 10px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.passengers__form input[aria-invalid='true'] {
+  border-color: #b00020;
+}
+
+.passengers__error {
+  min-height: 1.4em;
+  font-size: 0.95rem;
+  color: #b00020;
+}
+
+.passengers__submit {
+  min-height: 56px;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.passengers__live:empty {
+  display: none;
+}
+
+.passengers__notice {
+  padding: 8px 10px;
+  border-radius: 6px;
+}
+
+.passengers__notice--success {
+  background: #e3f4e7;
+  color: #14532a;
+}
+
+.passengers__notice--error {
+  background: #fde8e8;
+  color: #8a1c14;
+}
