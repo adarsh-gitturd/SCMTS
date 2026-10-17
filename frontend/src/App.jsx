@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
+import AdminAnalyticsPage from './admin/AdminAnalyticsPage.jsx'
 import AdminFleetPage from './admin/AdminFleetPage.jsx'
 import AdminHome from './admin/AdminHome.jsx'
 import AdminRoutesPage from './admin/AdminRoutesPage.jsx'
@@ -81,6 +82,16 @@ export default function App() {
           <RequireAuth>
             <RequireAdmin>
               <AdminFleetPage />
+            </RequireAdmin>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/admin/analytics"
+        element={
+          <RequireAuth>
+            <RequireAdmin>
+              <AdminAnalyticsPage />
             </RequireAdmin>
           </RequireAuth>
         }

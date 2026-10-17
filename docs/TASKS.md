@@ -62,9 +62,9 @@ One task = one fresh Claude session. Tick when done and committed.
 
 ## Phase 4 – Pre-AI data
 - [x] 4.1 context columns on trips (hour, weekday, predicted ETA, bus status at start, passengers; delay is derived later from ended_at - started_at)
-- [ ] 4.2 Admin analytics queries (busiest routes, average delay; /admin/analytics/*: role admin)
+- [x] 4.2 Admin analytics queries (busiest routes, average delay; /admin/analytics/*: role admin)
   - [x] 4.2-A analytics endpoints
-- [ ] 4.3 Analytics page in admin UI
+- [x] 4.3 Analytics page in admin UI
 - [x] 4.4 Script to generate extra synthetic trip data
 
 ## Phase 5 – AI (only after MVP is stable)
